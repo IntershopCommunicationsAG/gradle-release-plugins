@@ -1,0 +1,38 @@
+{"data": [
+    {
+        "resourceURI": "${urlStr}/service/local/staging/profile_evaluate/19124894924ac",
+        "id": "19124894924ac",
+        "name": "Test Releases",
+        "repositoryTemplateId": "default_hosted_release",
+        "repositoryType": "maven2",
+        "repositoryTargetId": "testReleases",
+        "inProgress": false,
+        "order": 0,
+        "deployURI": "${urlStr}/service/local/staging/deploy/maven2",
+        "targetGroups": [
+            "payment_dev"
+        ],
+        "finishNotifyRoles": [],
+        "promotionNotifyRoles": [],
+        "dropNotifyRoles": [],
+        "finishNotifyEmails": "test@intershop.de",
+        "promotionNotifyEmails": "test@intershop.de",
+        "dropNotifyEmails": "test@intershop.de",
+        "closeRuleSets": [
+            ""
+        ],
+        "promoteRuleSets": [
+            ""
+        ],
+        "promotionTargetRepository": "test_releases",
+        "mode": "DEPLOY",
+        "finishNotifyCreator": true,
+        "promotionNotifyCreator": true,
+        "dropNotifyCreator": true,
+        "autoStagingDisabled": false,
+        "repositoriesSearchable": true,
+        "properties": {
+            "@class": "linked-hash-map"
+        }
+    }]
+}

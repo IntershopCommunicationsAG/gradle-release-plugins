@@ -1,0 +1,191 @@
+= Gradle Release Plugins for Intershop
+:latestRevision: 1.0.0
+
+== Summary
+This collection of plugins adds special release functionality and encapsulates specific configurations and task dependencies.
+It includes plugins for the creation of an escrow package, for the configuration of JavaDoc and the configuration of publishing.
+
+== Plugins
+=== Escrow Package Plugin
+It creates a zip file of the root project after the build. It is possible to exclude files and directories additional
+for the prepared default excludes.
+
+==== Usage
+To use the Gradle escrow plugin. include the following in your build script:
+
+[source,groovy,subs="attributes"]
+----
+plugins {
+   id 'com.intershop.gradle.escrow-plugin' version '{latestRevision}'
+}
+
+escrow {
+    sourceGroup = 'publishing group of the escrow package'
+}
+----
+This plugin can be applied only to the root project. It produces a zip package with all the sources and without
+Gradle wrapper directory, which will be published to the specified repository.
+
+==== Extension
+This plugin adds an extension *`escrow`* to the project.
+
+==== Properties
+
+[cols="17%,17%,17%,68%", width="90%, options="header"]
+|===
+|Property | Type | Default value | Description
+|*runOnCI*     |`boolean` | false | This configuration must be true, if the project is used on a CI server. +
+                                 _This can be overwritten by the system or environment variable `RUNONCI` or project property `runOnCI`._
+|*sourceGroup* | `String` | `project.getGroup()` | Group or organization of the published ESCROW source package
+|*classifier*  | `String` | 'src' | Specify the classifier of this artifact.
+
+|===
+
+[source,groovy,indent=8]
+.Default exclude pattern of this plugin
+----
+
+[ <buildDir of the root project>, "*/<buildDir of the root project>", '.gradle', '.svn', '.git', '.idea', '.eclipse', '.settings', '**/.settings/**' ]
+
+----
+
+This list can be manipulated with the following methods:
+
+[cols="17%,17%,17%,68%", width="90%, options="header"]
+|===
+|Method       | Type   | Parameter    | Description
+|*exclude*    | `void` | String       | Add an additional exlude pattern to the exclude list.
+|*excludes*   | `void` | List<String> | Add all elements of the parameter list to the exclude list.
+|*setExcludes*| `void` | List<String> | Reset the default exclude list with the parameter list.
+
+|===
+
+== Java Doc Configuration Plugin
+This plugin provides an Intershop specific configuration for the JavaDoc creation.
+
+=== Usage
+To use the Gradle plugin with the Intershop Javadoc configuration, include the following in your build script:
+
+[source,groovy,subs="attributes"]
+----
+plugins {
+    id 'com.intershop.gradle.javadoc-configuration']
+]
+----
+
+It must be applied to each subproject of a multi project.
+It changes the image and the used ccs of generated Javadoc files.
+
+== Nexus Publish Configuration Plugin
+It applies the following plugins to the root project: +
+https://github.com/IntershopCommunicationsAG/nexusstaging-gradle-plugin[Nexus Staging Gradle Plugin] +
+https://github.com/IntershopCommunicationsAG/jiraconnector-gradle-plugin[Gradle Plugin for Editing Atlassian Jira Issues]
+
+It requires, that the https://github.com/IntershopCommunicationsAG/scmversion-gradle-plugin[SCM Version Plugin] is applied to the project.
+
+The configuration and the execution of tasks depends on the version number. The staging functionality, change log and
+the editing of Jira issues will be executed only for release versions without a "SNAPSHOT" extension.
+
+=== Usage
+To use the Nexus Publish configuration plugin, include the following in your build script:
+
+[source,groovy,subs="attributes"]
+----
+plugins {
+    id 'com.intershop.gradle.nexuspublish-configuration'
+}
+----
+
+The behaviour of the plugin is controlled by environment variables, so that the plugin can be applied to the project without exceptions.
+This kind of configuration is also easier to maintain on the CI server.
+
+The target repository for publishing depends on the version number. +
+ - Snapshots - version ends with SNAPSHOT - will be published to the Snapshot repository. +
+ - All other artifacts will be published in a Nexus staging repository.
+
+The path of this snapshot repository is always 'content/repositories/snapshots'. It is also possible to specify a complete separate URL for Snapshots.
+
+When an artifact should be published directly to a repository it is possible to specify +
+ - a special repository path with a repository base URL or +
+ - a complete publishing URL.
+
+For release versions the field 'Fix Version/s' JIRA issues will be extended with the current build version. It is possible to change the field with the project property 'jiraFieldName'.
+
+[cols="17%,17%,65%", width="95%", options="header"]
+|===
+| System variable or Java system property | Project property  | Description
+
+| *RUNONCI*          | *runOnCI*         | This configuration must be true, if the project is used on a CI server.
+
+| *SNAPSHOTURL*      | *snapshotURL*     | Snapshot URL for publishing of snapshot builds
+| *RELEASEURL*       | *releaseURL*      | Release URL for publishing of release builds without staging.
+3+|The host url is used from the general setting of the base URL.
+| *SNAPSHOTPATH*     | *snapshotPath*    | Path for Snapshot builds.
+| *RELEASEPATH*      | *releasePath*     | Path for release builds.
+3+|These settings are dublicated from the https://github.com/IntershopCommunicationsAG/nexusstaging-gradle-plugin[Nexus Staging Gradle Plugin]
+| *NEXUSBASEURL*     | *nexusBaseURL*    | The base url of the repository server, e.g. http://nexus/nexus
+| *NEXUSUSERNAME*    | *nexusUserName*   | The username with the correct role/permissions for transfer
+| *NEXUSUSERPASSWD*  | *nexusUserPASSWD* | The password of the user.
+3+|These settings are dublicated from the https://github.com/IntershopCommunicationsAG/jiraconnector-gradle-plugin[Gradle Plugin for Editing Atlassian Jira Issues]
+| *JIRABASEURL*      | *jiraBaseURL*     | The base url of Atlassian Jira, e.g. http://jira/jira
+| *JIRAUSERNAME*     | *jiraUserName*    | The username with the correct role/permissions for editing issues
+| *JIRAUSERPASSWD*   | *jiraUserPASSWD*  | The password of the user.
+|                    | *jiraFieldName*   | The version string will be set to this field. Default: 'Fix Version/s'
+|===
+
+The properties can be set with files from an other source management system.
+[source,shell,subs="attributes"]
+----
+
+source /dev/stdin &lt;&lt;&lt; "$(curl -s https://gitlab/user/build-configuration/raw/master/configuration.file?private_token=token)"
+
+sh ./gradlew clean test publish -s
+
+----
+
+.configuration.file
+[source,shell,subs="attributes"]
+----
+# configuration for assembly tests
+ORG_GRADLE_PROJECT_buildEnvironmentProperties=${WORKINGDIR}/environment/intershop7-release-environment.properties
+ORG_GRADLE_PROJECT_testEnvironmentProperties=${WORKINGDIR}/environment/intershop7-release-environment.properties
+
+# configuration for Nexus Staging Gradle Plugin
+NEXUSBASEURL=http://nexus/nexus/
+NEXUSUSERNAME=deployUser
+NEXUSUSERPASSWD=deployUserPassword
+
+# configuration for Gradle Plugin for Editing Atlassian Jira Issues
+JIRABASEURL=https://jira
+JIRAUSERNAME=jiraUser
+JIRAUSERPASSWD=jiraUserPassword
+
+# configuration for SCM Version Plugin
+SCM_USERNAME=rndbuild
+SCM_PASSWORD=1ntersh0p
+
+# configuration for Repository Configuration Init Script Plugin
+DISABLE_LOCAL_REPO=true
+
+# configuration for plugins
+RUNONCI=true
+
+# export variables
+export ORG_GRADLE_PROJECT_buildEnvironmentProperties ORG_GRADLE_PROJECT_testEnvironmentProperties NEXUSBASEURL
+export NEXUSUSERNAME NEXUSUSERPASSWD JIRABASEURL JIRAUSERPASSWD JIRAUSERPASSWD SCM_USERNAME SCM_PASSWORD
+export DISABLE_LOCAL_REPO RUNONCI
+
+# show Gradle version
+sh ./gradlew --version
+
+----
+
+== License
+
+Copyright 2014-2016 Intershop Communications.
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
