@@ -214,7 +214,7 @@ pluginBundle {
 
 dependencies {
     compile 'com.intershop.gradle.nexusstaging:nexusstaging-gradle-plugin:1.0.2'
-    compile 'com.intershop.gradle.jiraconnector:jiraconnector-gradle-plugin:1.0.3'
+    compile 'com.intershop.gradle.jiraconnector:jiraconnector-gradle-plugin:1.0.4'
 
     testCompile('org.spockframework:spock-core:1.0-groovy-2.4'){
         exclude group: 'org.codehaus.groovy'
