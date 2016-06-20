@@ -209,6 +209,10 @@ pluginBundle {
             id = 'com.intershop.gradle.nexuspublish-configuration'
             displayName = 'Plugin with specific publishing configuration'
         }
+        simplepublishPlugin {
+            id = 'com.intershop.gradle.simplepublish-configuration'
+            displayName = 'Plugin with simple publishing configuration'
+        }
     }
 }
 
