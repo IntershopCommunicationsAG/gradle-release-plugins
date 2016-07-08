@@ -34,8 +34,6 @@ class TestDispatcher {
                 String line = request.getRequestLine()
                 String path = request.getPath()
 
-                //GET /nexusnexus/service/local/staging/profile_evaluate?t=maven2&g=com.intershop.project&a=project1a&v=1.0.0
-
                 if(path.startsWith('/nexus/service/local/staging/profile_evaluate')) {
                     MockResponse nexus_response = new MockResponse()
                             .addHeader("Content-Type", "application/json; charset=utf-8")
