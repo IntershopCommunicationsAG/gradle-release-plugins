@@ -123,4 +123,101 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
         upLoadListCheck
     }
 
+    def 'test snapshot publishing with internal version changes'() {
+        given:
+        String urlStr = server.url('/').toString()
+        List<String> upLoadList = []
+        Map<String,String> responses = [:]
+
+        server.setDispatcher(TestDispatcher.getIntegrationDispatcher(responses, upLoadList))
+
+        buildFile << """
+            plugins {
+                id 'java'
+                id 'ivy-publish'
+                id 'com.intershop.gradle.simplepublish-configuration'
+            }
+
+            group = 'com.intershop'
+            version = '1.0.0'
+
+            publishing {
+                publications {
+                    ivy(IvyPublication) {
+                        from components.java
+                    }
+                }
+            }
+        """.stripIndent()
+
+        File settingsfile = file('settings.gradle')
+        settingsfile << """
+            // define root proejct name
+            rootProject.name = 'p_testProject'
+        """.stripIndent()
+        writeJavaTestClass("com.intershop.test")
+
+        when:
+        def result = getPreparedGradleRunner()
+                .withArguments('publish', "-DRUNONCI=true", "-PsnapshotURL=${urlStr}nexus/snapshots", "-PreleaseURL=${urlStr}nexus/releases", '-PrepoUserName=admin', '-PrepoUserPasswd=admin123', '-PsnapshotRelease=true', '-s')
+                .build()
+
+        boolean upLoadListCheck = true
+
+        upLoadList.each {
+            upLoadListCheck &= it.contains('/nexus/snapshots')
+        }
+
+        then:
+        upLoadListCheck
+    }
+
+    def 'test local publishing'() {
+        given:
+        String urlStr = server.url('/').toString()
+        List<String> upLoadList = []
+        Map<String,String> responses = [:]
+
+        buildFile << """
+            plugins {
+                id 'java'
+                id 'ivy-publish'
+                id 'com.intershop.gradle.simplepublish-configuration'
+            }
+
+            group = 'com.intershop'
+            version = '1.0.0'
+
+            publishing {
+                publications {
+                    ivy(IvyPublication) {
+                        from components.java
+                    }
+                }
+
+                repositories {
+                    ivy {
+                        url "\$buildDir/repo"
+                    }
+                }
+            }
+        """.stripIndent()
+
+        File settingsfile = file('settings.gradle')
+        settingsfile << """
+            // define root proejct name
+            rootProject.name = 'p_testProject'
+        """.stripIndent()
+        writeJavaTestClass("com.intershop.test")
+
+        when:
+        def result = getPreparedGradleRunner()
+                .withArguments('publish', "-PsnapshotURL=${urlStr}nexus/snapshots", "-PreleaseURL=${urlStr}nexus/releases", '-PrepoUserName=admin', '-PrepoUserPasswd=admin123', '-s')
+                .build()
+
+        then:
+        (new File(testProjectDir, 'build/publications/ivy/ivy.xml')).text.contains('1.0.0-LOCAL')
+        (new File(testProjectDir, 'build/libs/p_testProject-1.0.0-LOCAL.jar')).exists()
+    }
+
 }

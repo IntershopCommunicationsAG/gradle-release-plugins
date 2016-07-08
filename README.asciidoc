@@ -98,12 +98,13 @@ This kind of configuration is also easier to maintain on the CI server.
 |===
 | System variable or Java system property | Project property  | Description
 
-| *RUNONCI*          | *runOnCI*         | This configuration must be true, if the project is used on a CI server.
+| *RUNONCI*          | *runOnCI*         | This configuration must be true, if the project is used on a CI server. The version will be extended with '-LOCAL', if this value is false.
 
 | *SNAPSHOTURL*      | *snapshotURL*     | Snapshot URL for publishing of snapshot builds
 | *RELEASEURL*       | *releaseURL*      | Release URL for publishing of release builds without staging.
 | *REPO_USER_NAME*    | *repoUserName*   | The username with the correct role/permissions for transfer
 | *REPO_USER_PASSWD*  | *repoUserPasswd* | The password of the user.
+| *SNAPSHOT_RELEASE* | *snapshotRelease* | The version will be extended with '-SNAPSHOT' and snapshot repositories are used if this value is set to 'true'.
 |===
 
 == Nexus Publish Configuration Plugin

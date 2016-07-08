@@ -40,14 +40,20 @@ class PublishConfigurationPlugin  implements Plugin<Project> {
     /*
      * Repository user name
      */
-    final static String REPO_USER_NAME_ENV = 'repoUserName'
-    final static String REPO_USER_NAME_PRJ = 'REPO_USER_NAME'
+    final static String REPO_USER_NAME_ENV = 'REPO_USER_NAME '
+    final static String REPO_USER_NAME_PRJ = 'repoUserName'
 
     /*
      * Repository user password
      */
-    final static String REPO_USER_PASSWD_ENV = 'repoUserPasswd'
-    final static String REPO_USER_PASSWD_PRJ = 'REPO_USER_PASSWD'
+    final static String REPO_USER_PASSWD_ENV = 'REPO_USER_PASSWD'
+    final static String REPO_USER_PASSWD_PRJ = 'repoUserPasswd'
+
+    /**
+     * SNAPSHOT RELEASE
+     */
+    final static String SNAPSHOT_RELEASE_ENV = 'SNAPSHOT_RELEASE'
+    final static String SNAPSHOT_RELEASE_PRJ = 'snapshotRelease'
 
     // publication names
     public final static String IVYREPONAME = 'intershopIvyCI'
@@ -56,6 +62,9 @@ class PublishConfigurationPlugin  implements Plugin<Project> {
     public void apply(Project project) {
         String runOnCI = getVariable(project, RUNONCI_ENV, RUNONCI_PRJ, 'false')
         project.logger.info('Publishing Configuration: RunOnCI: {}', runOnCI.toBoolean())
+
+        //provide compatibility with the repo config plung
+        project.ext.useSCMVersionConfig = 'true'
 
         if (runOnCI.toBoolean()) {
             project.logger.info('Simple release publishing configuration will be applied to project {}', project.name)
@@ -66,15 +75,19 @@ class PublishConfigurationPlugin  implements Plugin<Project> {
             String repoReleaseURL = getVariable(project, RELEASE_URL_ENV, RELEASE_URL_PRJ, '')
             String repoSnapshotURL = getVariable(project, SNAPSHOT_URL_ENV, SNAPSHOT_URL_PRJ, '')
 
+            String snapshotRelease = getVariable(project, SNAPSHOT_RELEASE_ENV, SNAPSHOT_RELEASE_PRJ, 'false')
+
             if(repoSnapshotURL) {
-                println repoSnapshotURL
-                applySnapshotPublishing(project, repoSnapshotURL, repoUserLogin, repoUserPassword)
+                applySnapshotPublishing(project, repoSnapshotURL, repoUserLogin, repoUserPassword, snapshotRelease.toLowerCase() == 'true')
             }
             if(repoReleaseURL) {
                 applyReleasePublishing(project, repoReleaseURL, repoUserLogin, repoUserPassword)
             }
 
-            project.rootProject.rootProject.afterEvaluate {
+            project.rootProject.afterEvaluate {
+                if(snapshotRelease.toLowerCase() == 'true') {
+                    project.version = "$project.version-SNAPSHOT"
+                }
                 if(! project.version.endsWith('-SNAPSHOT')) {
                     // add javadoc to root project
                     project.getRootProject().ext.releaseWithJavaDoc = 'true'
@@ -82,18 +95,22 @@ class PublishConfigurationPlugin  implements Plugin<Project> {
                     project.getRootProject().getSubprojects().each { Project subp ->
                         subp.ext.releaseWithJavaDoc = 'true'
                     }
-                } else {
-                    System.setProperty('ENABLE_SNAPSHOTS', 'true')
                 }
+            }
+        } else {
+            project.rootProject.afterEvaluate {
+                project.logger.info('Project runs local! Local configuration will be set.')
+                project.status = 'local'
+                project.version = "$project.version-LOCAL"
             }
         }
     }
 
-    private void applySnapshotPublishing(Project p, String snapshotURL, String repoUser, String repoUserPasswd) {
+    private void applySnapshotPublishing(Project p, String snapshotURL, String repoUser, String repoUserPasswd, boolean useSnapShotRepo = false) {
         p.plugins.withType(IvyPublishPlugin) {
             p.publishing {
                 repositories {
-                    if (!delegate.findByName(IVYREPONAME) && p.version.endsWith('-SNAPSHOT')) {
+                    if (!delegate.findByName(IVYREPONAME) && (p.version.endsWith('-SNAPSHOT') || useSnapShotRepo)) {
                         p.logger.info('Add Ivy publishing repository')
                         ivy {
                             name IVYREPONAME
@@ -111,7 +128,7 @@ class PublishConfigurationPlugin  implements Plugin<Project> {
                 }
             }
             p.repositories {
-                if (!delegate.findByName(IVYREPONAME) && p.version.endsWith('-SNAPSHOT')) {
+                if (!delegate.findByName(IVYREPONAME) && (p.version.endsWith('-SNAPSHOT') || useSnapShotRepo)) {
                     p.logger.info('Ivy repository {} added to the project repository configuration', IVYREPONAME)
                     ivy {
                         name IVYREPONAME
@@ -130,7 +147,7 @@ class PublishConfigurationPlugin  implements Plugin<Project> {
         p.plugins.withType(MavenPublishPlugin) {
             p.publishing {
                 repositories {
-                    if (!delegate.findByName(MVNREPOName) && p.version.endsWith('-SNAPSHOT')) {
+                    if (!delegate.findByName(MVNREPOName) && (p.version.endsWith('-SNAPSHOT') || useSnapShotRepo)) {
                         p.logger.info('Add Mvn publishing repository')
                         maven {
                             name MVNREPOName
@@ -147,7 +164,7 @@ class PublishConfigurationPlugin  implements Plugin<Project> {
                 }
             }
             p.repositories {
-                if (!delegate.findByName(MVNREPOName) && p.version.endsWith('-SNAPSHOT')) {
+                if (!delegate.findByName(MVNREPOName) && (p.version.endsWith('-SNAPSHOT') || useSnapShotRepo)) {
                     p.logger.info('Mvn repository {} added to the project repository configuration', MVNREPOName)
                     maven {
                         name MVNREPOName
