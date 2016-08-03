@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package com.intershop.gradle.nexuspublish
 
-import com.intershop.gradle.test.AbstractIntegrationSpec
+
+package com.intershop.gradle.simplepublish
+
 import com.intershop.gradle.test.util.TestDispatcher
+import com.intershop.gradle.test.AbstractIntegrationSpec
 import com.squareup.okhttp.mockwebserver.MockWebServer
 import org.junit.Rule
 import spock.lang.Unroll
@@ -26,10 +28,8 @@ import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 @Unroll
 class MultiProjectSpec extends AbstractIntegrationSpec {
 
-    static String issueKey = 'ISTOOLS-993'
-
-    String configURL = System.properties['configURL']
-    String configToken = System.properties['configURLToken']
+    @Rule
+    public final MockWebServer server = new MockWebServer()
 
     private static String buildFileContentBase = """
                                           plugins {
@@ -59,7 +59,7 @@ class MultiProjectSpec extends AbstractIntegrationSpec {
                                               id 'java'
                                               id 'ivy-publish'
                                           }
-                                          apply plugin: 'com.intershop.gradle.nexuspublish-configuration'
+                                          apply plugin: 'com.intershop.gradle.simplepublish-configuration'
 
                                           sourceCompatibility = 1.7
                                           targetCompatibility = 1.7
@@ -80,10 +80,7 @@ class MultiProjectSpec extends AbstractIntegrationSpec {
                                           }
                                           """.stripIndent()
 
-    @Rule
-    public final MockWebServer server = new MockWebServer()
-
-    def 'test release publishing with staging'() {
+    def 'test release publishing'() {
         given:
         String urlStr = server.url('/').toString()
         List<String> upLoadList = []
@@ -94,8 +91,7 @@ class MultiProjectSpec extends AbstractIntegrationSpec {
         buildFile << """
             plugins {
                 id 'ivy-publish'
-                id 'com.intershop.gradle.scmversion' version '1.3.0'
-                id 'com.intershop.gradle.nexuspublish-configuration'
+                id 'com.intershop.gradle.simplepublish-configuration'
             }
 
             group = 'com.intershop'
@@ -118,47 +114,24 @@ class MultiProjectSpec extends AbstractIntegrationSpec {
         createSubProjectJava('project1a', settingsfile, 'com.intereshop.a', buildFileContent, '1.0.0')
         createSubProjectJava('project2b', settingsfile, 'com.intereshop.b', buildFileContent, '1.0.0')
 
-        File changelog = file('build/changelog/changelog.asciidoc')
-        changelog << """
-        = Change Log for 2.0.0
-
-        This list contains changes since version 1.0.0. +
-        Created: Sun Feb 21 17:11:48 CET 2016
-
-        [cols="5%,5%,90%", width="95%", options="header"]
-        |===
-        3+| ${issueKey} change on master (e6c62c43)
-        | | M |  gradle.properties
-        3+| remove unnecessary files (a2da48ad)
-        | | D | gradle/wrapper/gradle-wrapper.jar
-        | | D | gradle/wrapper/gradle-wrapper.properties
-        |===""".stripIndent()
-
         when:
         def result = getPreparedGradleRunner()
-                .withArguments('publish', '--exclude-task', 'changelog', '--stacktrace', '-i', "-DRUNONCI=true", '-PjiraFieldName=Labels', "-DNEXUSBASEURL=${urlStr}nexus/", '-DNEXUSUSERNAME=admin', '-DNEXUSUSERPASSWD=admin123', "-DJIRABASEURL=${urlStr}", '-DJIRAUSERNAME=admin', '-DJIRAUSERPASSWD=admin123')
+                .withArguments('publish', '--stacktrace', '-i', "-DRUNONCI=true", "-PsnapshotURL=${urlStr}nexus/snapshots", "-PreleaseURL=${urlStr}nexus/releases", '-PrepoUserName=admin', '-PrepoUserPasswd=admin123')
                 .build()
 
         boolean upLoadListCheck = true
         upLoadList.each {
-            upLoadListCheck &= it.contains('/nexus/service/local/staging/deploy/maven2/')
+            upLoadListCheck &= it.contains('/nexus/releases/')
         }
 
         then:
-        result.output.contains('CREATE JAVADOC')
-        result.task(':upload').outcome == SUCCESS
-        result.task(':setIssueField').outcome == SUCCESS
-        result.task(':project1a:publishIvyPublicationToIvyNexusStagingRepository').outcome == SUCCESS
-        result.task(':project2b:publishIvyPublicationToIvyNexusStagingRepository').outcome == SUCCESS
         upLoadListCheck
-        responses.get('onebody').contains('"project":{"key":"ISTOOLS"}')
-        responses.get('onebody').contains('"issuetype":{"id":"10001"}')
 
         where:
         buildFileContent << [buildFileContentBase, buildFileContentBaseDouble]
     }
 
-    def 'test release publishing without staging'() {
+    def 'test snapshot publishing'() {
         given:
         String urlStr = server.url('/').toString()
         List<String> upLoadList = []
@@ -169,8 +142,7 @@ class MultiProjectSpec extends AbstractIntegrationSpec {
         buildFile << """
             plugins {
                 id 'ivy-publish'
-                id 'com.intershop.gradle.scmversion' version '1.3.0'
-                id 'com.intershop.gradle.nexuspublish-configuration'
+                id 'com.intershop.gradle.simplepublish-configuration'
             }
 
             group = 'com.intershop'
@@ -193,30 +165,14 @@ class MultiProjectSpec extends AbstractIntegrationSpec {
         createSubProjectJava('project1a', settingsfile, 'com.intereshop.a', buildFileContent, '1.0.0-SNAPSHOT')
         createSubProjectJava('project2b', settingsfile, 'com.intereshop.b', buildFileContent, '1.0.0-SNAPSHOT')
 
-        File changelog = file('project1a/build/changelog/changelog.asciidoc')
-        changelog << """
-        = Change Log for 2.0.0
-
-        This list contains changes since version 1.0.0. +
-        Created: Sun Feb 21 17:11:48 CET 2016
-
-        [cols="5%,5%,90%", width="95%", options="header"]
-        |===
-        3+| ${issueKey} change on master (e6c62c43)
-        | | M |  gradle.properties
-        3+| remove unnecessary files (a2da48ad)
-        | | D | gradle/wrapper/gradle-wrapper.jar
-        | | D | gradle/wrapper/gradle-wrapper.properties
-        |===""".stripIndent()
-
         when:
         def result = getPreparedGradleRunner()
-                .withArguments('publish', '--exclude-task', 'changelog', '--stacktrace', '-i', "-DRUNONCI=true", '-PjiraFieldName=Labels', "-DNEXUSBASEURL=${urlStr}nexus/", '-DNEXUSUSERNAME=admin', '-DNEXUSUSERPASSWD=admin123', "-DJIRABASEURL=${urlStr}", '-DJIRAUSERNAME=admin', '-DJIRAUSERPASSWD=admin123')
+                .withArguments('publish', "-DRUNONCI=true", "-PsnapshotURL=${urlStr}nexus/snapshots", "-PreleaseURL=${urlStr}nexus/releases", '-PrepoUserName=admin', '-PrepoUserPasswd=admin123', '-s')
                 .build()
 
         boolean upLoadListCheck = true
         upLoadList.each {
-            upLoadListCheck &= it.contains('/nexus/content/repositories/snapshots/')
+            upLoadListCheck &= it.contains('/nexus/snapshots/')
         }
 
         then:

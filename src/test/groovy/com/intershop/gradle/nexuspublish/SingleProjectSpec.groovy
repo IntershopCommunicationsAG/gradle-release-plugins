@@ -18,6 +18,7 @@
 package com.intershop.gradle.nexuspublish
 
 import com.intershop.gradle.test.AbstractIntegrationSpec
+import com.intershop.gradle.test.util.TestDispatcher
 import com.squareup.okhttp.mockwebserver.MockWebServer
 import org.junit.Rule
 
@@ -58,7 +59,7 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
             plugins {
                 id 'java'
                 id 'ivy-publish'
-                id 'com.intershop.gradle.scmversion' version '1.0.4'
+                id 'com.intershop.gradle.scmversion' version '1.3.0'
                 id 'com.intershop.gradle.nexuspublish-configuration'
             }
 
@@ -131,7 +132,7 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
             plugins {
                 id 'java'
                 id 'ivy-publish'
-                id 'com.intershop.gradle.scmversion' version '1.0.4'
+                id 'com.intershop.gradle.scmversion' version '1.3.0'
                 id 'com.intershop.gradle.nexuspublish-configuration'
             }
 
