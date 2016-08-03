@@ -17,7 +17,7 @@
 
 package com.intershop.gradle.simplepublish
 
-import com.intershop.gradle.nexuspublish.TestDispatcher
+import com.intershop.gradle.test.util.TestDispatcher
 import com.intershop.gradle.test.AbstractIntegrationSpec
 import com.squareup.okhttp.mockwebserver.MockWebServer
 import org.junit.Rule

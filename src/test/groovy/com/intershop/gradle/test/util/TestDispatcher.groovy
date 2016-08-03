@@ -15,12 +15,11 @@
  */
 
 
-package com.intershop.gradle.nexuspublish
+package com.intershop.gradle.test.util
 
 import com.squareup.okhttp.mockwebserver.Dispatcher
 import com.squareup.okhttp.mockwebserver.MockResponse
 import com.squareup.okhttp.mockwebserver.RecordedRequest
-
 
 class TestDispatcher {
 
