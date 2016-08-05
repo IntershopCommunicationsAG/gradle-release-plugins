@@ -40,7 +40,7 @@ class PublishConfigurationPlugin  implements Plugin<Project> {
     /*
      * Repository user name
      */
-    final static String REPO_USER_NAME_ENV = 'REPO_USER_NAME '
+    final static String REPO_USER_NAME_ENV = 'REPO_USER_NAME'
     final static String REPO_USER_NAME_PRJ = 'repoUserName'
 
     /*
