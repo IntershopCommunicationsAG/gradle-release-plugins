@@ -15,13 +15,13 @@
  */
 package com.intershop.gradle.artifactorypublish
 
+import com.intershop.gradle.buildinfo.BuildInfoExtension
 import com.intershop.gradle.jiraconnector.JiraConnectorPlugin
-import com.intershop.gradle.repoconfig.RepoConfigRegistry
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.jfrog.gradle.plugin.artifactory.ArtifactoryPlugin
-
+import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
 /**
  * This is the implementation of the plugin.
  */
@@ -41,12 +41,12 @@ class ArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
     public final static String RELEASE_URL_PRJ = 'releaseURL'
 
     // Repo SNAPSHOT Path (based on Nexus Base URL configuration)
-    public final static String SNAPSHOT_KEY_ENV = 'SNAPSHOTPATH'
-    public final static String SNAPSHOT_KEY_PRJ = 'snapshotPath'
+    public final static String SNAPSHOT_KEY_ENV = 'SNAPSHOTREPOKEY'
+    public final static String SNAPSHOT_KEY_PRJ = 'snapshotRepoKey'
 
     // Repo RELEASE Path (based on Nexus Base URL configuration)
-    public final static String RELEASE_KEY_ENV = 'RELEASEPATH'
-    public final static String RELEASE_KEY_PRJ = 'releasePath'
+    public final static String RELEASE_KEY_ENV = 'RELEASEREPOKEY'
+    public final static String RELEASE_KEY_PRJ = 'releaseRepoKey'
 
     // dublicated from nexusstaging-gradle-plugin
     public final static String REPO_BASEURL_ENV = 'ARTIFACTORYBASEURL'
@@ -74,16 +74,17 @@ class ArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
 
     public void apply(Project project) {
 
+        project.rootProject.plugins.apply(ArtifactoryPlugin)
+
         String runOnCI = getVariable(project, RUNONCI_ENV, RUNONCI_PRJ, 'false')
         project.logger.info('Publishing Configuration: RunOnCI: {}', runOnCI.toBoolean())
 
         if (runOnCI.toBoolean()) {
-            project.logger.info('Intershop release publishing configuration will be applied to project {}', project.name)
+            project.logger.info('Intershop release publishing configuration for Artifactory will be applied to project {}', project.name)
 
             if (!project.rootProject.tasks.findByName('changelog')) {
                 throw new GradleException('Please apply also "com.intershop.gradle.scmversion"')
             }
-
 
             String jiraFieldName = project.hasProperty('jiraFieldName') ? project.property('jiraFieldName') : 'Fix Version/s'
 
@@ -94,70 +95,101 @@ class ArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
             String repoReleaseKey = getVariable(project, RELEASE_KEY_ENV, RELEASE_KEY_PRJ, '')
             String repoSnapshotKey = getVariable(project, SNAPSHOT_KEY_ENV, SNAPSHOT_KEY_PRJ, '')
 
-            project.rootProject.plugins.apply(ArtifactoryPlugin)
+            if(repoBaseURL && repoUserLogin && repoUserPassword && repoReleaseKey && repoSnapshotKey) {
+                ArtifactoryPluginConvention artifactoryPluginConvention = project.rootProject.convention.getPlugin(ArtifactoryPluginConvention)
+                BuildInfoExtension infoExtension = project.extensions.findByType(BuildInfoExtension)
 
-            artifactory {
-                if(repoBaseURL) {
+                project.artifactory {
                     contextUrl = repoBaseURL
-                }
-                publish {
-                    repository {
-                        repoKey = project.version.toString().endsWith('-SNAPSHOT') ? repoSnapshotKey : repoReleaseKey
-                        username = repoUserLogin
-                        password = repoUserPassword
+                    publish {
+                        repository {
+                            username = repoUserLogin
+                            password = repoUserPassword
+
+                            ivy {
+                                ivyLayout = '[organisation]/[module]/[revision]/[type]s/ivy-[revision].xml'
+                                artifactLayout = '[organisation]/[module]/[revision]/[ext]s/[artifact]-[type](-[classifier])-[revision].[ext]'
+                                mavenCompatible = false
+                            }
+                        }
+                        defaults {
+                            if(infoExtension) {
+                                properties = ['build.java.version': infoExtension.infoProvider.javaVersion,
+                                              'source.java.version': infoExtension.infoProvider.javaSourceCompatibility ?: infoExtension.infoProvider.javaVersion.split('_')[0],
+                                              'target.java.version': infoExtension.infoProvider.javaTargetCompatibility ?: infoExtension.infoProvider.javaVersion.split('_')[0],
+                                              'build.status': "${infoExtension.infoProvider.projectStatus?:'unknown'}",
+                                              'build.date': "${infoExtension.infoProvider.OSTime?:'unknown'}",
+                                              'gradle.version': "${infoExtension.infoProvider.gradleVersion?:'unknown'}",
+                                              'gradle.rootproject': "${infoExtension.infoProvider.rootProject?:'unknown'}",
+                                              'scm.type': "${infoExtension.scmProvider.SCMType?:'unknown'}",
+                                              'scm.branch.name': "${infoExtension.scmProvider.branchName?:'unknown'}",
+                                              'scm.change.time': "${infoExtension.scmProvider.lastChangeTime?:'unknown'}"
+                                             ]
+                            }
+                        }
+                        if(infoExtension) {
+                            clientConfig.info.setBuildName("${infoExtension.ciProvider.buildJob?:project.name}")
+                            clientConfig.info.setBuildNumber("${infoExtension.ciProvider.buildNumber?:'' + new java.util.Random(System.currentTimeMillis()).nextInt(20000)}")
+                            clientConfig.info.setBuildTimestamp("${infoExtension.ciProvider.buildTime?:'unknown'}")
+                            clientConfig.info.setBuildUrl("${infoExtension.ciProvider.buildUrl?:'unknown'}")
+                            clientConfig.info.setVcsRevision("${infoExtension.scmProvider.SCMRevInfo?:'unknown'}")
+                            clientConfig.info.setVcsUrl("${infoExtension.scmProvider.SCMOrigin?:'unknown'}")
+                        }
                     }
-                    ivy {
-                        ivyLayout = RepoConfigRegistry.ivyPattern
-                        artifactLayout = RepoConfigRegistry.artifactPattern
+                }
+
+                project.rootProject.allprojects {
+                    it.plugins.apply(ArtifactoryPlugin)
+                }
+
+                project.rootProject.rootProject.afterEvaluate {
+                    artifactoryPluginConvention.clientConfig.publisher.repoKey = project.version.toString().endsWith('-SNAPSHOT') ? repoSnapshotKey : repoReleaseKey
+                }
+            }
+
+            String jiraBaseURL = getVariable(project, JIRA_BASEURL_ENV, JIRA_BASEURL_PRJ, '')
+            String jiraUserLogin = getVariable(project, JIRA_USER_NAME_ENV, JIRA_USER_NAME_PRJ, '')
+            String jiraUserPassword = getVariable(project, JIRA_USER_PASSWORD_ENV, JIRA_USER_PASSWORD_PRJ, '')
+
+            if(jiraBaseURL && jiraUserLogin && jiraUserPassword) {
+                project.rootProject.plugins.apply(JiraConnectorPlugin)
+
+                project.rootProject.jiraConnector {
+                    linePattern = '3\\+.*'
+                    fieldName = jiraFieldName
+                    versionMessage = 'version created by build plugin'
+                    issueFile = project.rootProject.tasks.changelog.outputs.files.singleFile
+
+                    if (project.name.contains('_')) {
+                        fieldPattern = '[a-z1-9]*_(.*)'
                     }
                 }
-                defaults {
-                    publications ('ivy', 'maven')
+
+                project.rootProject.tasks.setIssueField.dependsOn project.rootProject.tasks.changelog
+
+                project.getRootProject().afterEvaluate {
+                    project.jiraConnector.fieldValue = "${project.name}/${project.version}"
+
+                    if(! project.version.toString().endsWith('-SNAPSHOT') && project.rootProject.tasks.findByName('artifactoryPublish')) {
+                        project.rootProject.tasks.artifactoryPublish.dependsOn project.tasks.setIssueField
+                    }
                 }
             }
 
-        String jiraBaseURL = getVariable(project, JIRA_BASEURL_ENV, JIRA_BASEURL_PRJ, '')
-        String jiraUserLogin = getVariable(project, JIRA_USER_NAME_ENV, JIRA_USER_NAME_PRJ, '')
-        String jiraUserPassword = getVariable(project, JIRA_USER_PASSWORD_ENV, JIRA_USER_PASSWORD_PRJ, '')
-
-        if(jiraBaseURL && jiraUserLogin && jiraUserPassword) {
-            project.rootProject.plugins.apply(JiraConnectorPlugin)
-
-            project.rootProject.jiraConnector {
-                linePattern = '3\\+.*'
-                fieldName = jiraFieldName
-                versionMessage = 'version created by build plugin'
-                issueFile = project.rootProject.tasks.changelog.outputs.files.singleFile
-
-                if (project.name.contains('_')) {
-                    fieldPattern = '[a-z1-9]*_(.*)'
-                }
-            }
-
-            project.rootProject.tasks.setIssueField.dependsOn project.rootProject.tasks.changelog
-
-            project.getRootProject().afterEvaluate {
-                project.jiraConnector.fieldValue = "${project.name}/${project.version}"
-
-                if(! project.version.endsWith('-SNAPSHOT')) {
-                    project.rootProject.tasks.publish.dependsOn project.tasks.setIssueField
+            project.rootProject.rootProject.afterEvaluate {
+                if(! project.version.toString().endsWith('-SNAPSHOT')) {
+                    // add javadoc to root project
+                    project.getRootProject().ext.releaseWithJavaDoc = 'true'
+                    // add javadoc to sub project
+                    project.getRootProject().getSubprojects().each { Project subp ->
+                        subp.ext.releaseWithJavaDoc = 'true'
+                    }
+                } else {
+                    System.setProperty('ENABLE_SNAPSHOTS', 'true')
                 }
             }
         }
 
-        project.rootProject.rootProject.afterEvaluate {
-            if(! project.version.endsWith('-SNAPSHOT')) {
-                // add javadoc to root project
-                project.getRootProject().ext.releaseWithJavaDoc = 'true'
-                // add javadoc to sub project
-                project.getRootProject().getSubprojects().each { Project subp ->
-                    subp.ext.releaseWithJavaDoc = 'true'
-                }
-            } else {
-                System.setProperty('ENABLE_SNAPSHOTS', 'true')
-            }
-        }
-        }
     }
 
     /**

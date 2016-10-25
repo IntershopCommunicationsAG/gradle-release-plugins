@@ -1,0 +1,18 @@
+{
+  "repo" : "releases",
+  "path" : "/com.intershop.testproject/project2b/1.0.0/jars/project2b-jar-1.0.0.jar",
+  "created" : "2016-10-25T09:59:25.843+02:00",
+  "createdBy" : "admin",
+  "downloadUri" : "http://localhost:80//releases/com.intershop.testproject/project2b/1.0.0/jars/project2b-jar-1.0.0.jar",
+  "mimeType" : "application/java-archive",
+  "size" : "1066",
+  "checksums" : {
+    "sha1" : "d871100e15f78ca722bc92d733c6ea23412e0f68",
+    "md5" : "8d34efeb870835ee3fb3d41b4c5c3867"
+  },
+  "originalChecksums" : {
+    "sha1" : "d871100e15f78ca722bc92d733c6ea23412e0f68",
+    "md5" : "8d34efeb870835ee3fb3d41b4c5c3867"
+  },
+  "uri" : "http://localhost:80//releases/com.intershop.testproject/project2b/1.0.0/jars/project2b-jar-1.0.0.jar"
+}

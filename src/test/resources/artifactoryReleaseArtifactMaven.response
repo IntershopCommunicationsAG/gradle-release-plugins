@@ -1,0 +1,18 @@
+{
+  "repo" : "releases",
+  "path" : "/com/intershop/testProject/1.1.0/jars/testProject-jar-1.1.0.jar",
+  "created" : "2016-10-23T19:04:03.675+02:00",
+  "createdBy" : "mraab",
+  "downloadUri" : "http://localhost:80/artifactory/releases/com/intershop/testProject/1.1.0/jars/testProject-jar-1.1.0.jar",
+  "mimeType" : "application/java-archive",
+  "size" : "1503",
+  "checksums" : {
+    "sha1" : "45a8a80894baefa045131f8cafa793ea624f3e08",
+    "md5" : "9a0c18788d6ec977c292a0c9f1ddbe21"
+  },
+  "originalChecksums" : {
+    "sha1" : "45a8a80894baefa045131f8cafa793ea624f3e08",
+    "md5" : "9a0c18788d6ec977c292a0c9f1ddbe21"
+  },
+  "uri" : "http://localhost:80/artifactory/releases/com/intershop/testProject/1.1.0/jars/testProject-jar-1.1.0.jar"
+}

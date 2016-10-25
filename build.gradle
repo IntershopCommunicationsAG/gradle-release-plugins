@@ -221,6 +221,7 @@ dependencies {
     compile 'com.intershop.gradle.jiraconnector:jiraconnector-gradle-plugin:2.1.0'
     compile 'com.intershop.gradle.repoconfig:repoconfig-gradle-plugin:1.1.1'
     compile 'org.jfrog.buildinfo:build-info-extractor-gradle:4.4.7'
+    compile 'com.intershop.gradle.buildinfo:buildinfo-gradle-plugin:2.1.0'
 
     testCompile('org.spockframework:spock-core:1.0-groovy-2.4'){
         exclude group: 'org.codehaus.groovy'

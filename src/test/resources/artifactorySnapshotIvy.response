@@ -1,0 +1,18 @@
+{
+  "repo" : "releases",
+  "path" : "/com.intershop/testProject/1.0.0-SNAPSHOT/ivys/ivy-1.0.0-SNAPSHOT.xml",
+  "created" : "2016-10-23T19:04:06.259+02:00",
+  "createdBy" : "mraab",
+  "downloadUri" : "http://localhost:80/artifactory/releases/com.intershop/testProject/1.0.0-SNAPSHOT/ivys/ivy-1.0.0-SNAPSHOT.xml",
+  "mimeType" : "application/xml",
+  "size" : "1981",
+  "checksums" : {
+    "sha1" : "604034b62b9c93b0ebaa97dfde361314a909bdba",
+    "md5" : "50c695aac3bd10a5c6ce29fcb959425f"
+  },
+  "originalChecksums" : {
+    "sha1" : "604034b62b9c93b0ebaa97dfde361314a909bdba",
+    "md5" : "50c695aac3bd10a5c6ce29fcb959425f"
+  },
+  "uri" : "http://localhost:80/artifactory/releases/com.intershop/testProject/1.0.0-SNAPSHOT/ivys/ivy-1.0.0-SNAPSHOT.xml"
+}
