@@ -34,7 +34,7 @@ class TestDispatcher {
                 String path = request.getPath()
                 String userAgent = request.headers.get('User-Agent')
 
-                if(userAgent.contains('ArtifactoryBuildClient')) {
+                if(userAgent && userAgent.contains('ArtifactoryBuildClient')) {
                     MockResponse artifactoryResponse = null
 
                     if (path.startsWith('/releases') && path.contains('jar')) {

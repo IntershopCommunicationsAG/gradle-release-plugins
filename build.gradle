@@ -213,6 +213,10 @@ pluginBundle {
             id = 'com.intershop.gradle.simplepublish-configuration'
             displayName = 'Plugin with simple publishing configuration'
         }
+        artifactorypublishPlugin {
+            id = 'com.intershop.gradle.artifactorypublish-configuration'
+            displayName = 'Plugin with Intershop specific publishing configuration with Artifactory'
+        }
     }
 }
 
