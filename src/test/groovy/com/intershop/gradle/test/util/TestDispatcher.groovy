@@ -32,7 +32,150 @@ class TestDispatcher {
             public MockResponse dispatch(RecordedRequest request) throws InterruptedException {
                 String line = request.getRequestLine()
                 String path = request.getPath()
+                String userAgent = request.headers.get('User-Agent')
 
+                if(userAgent && userAgent.contains('ArtifactoryBuildClient')) {
+                    MockResponse artifactoryResponse = null
+
+                    if (path.startsWith('/releases') && path.contains('jar')) {
+                        uploadlist.add(path)
+                        if(path.contains('1a')) {
+                            artifactoryResponse = new MockResponse()
+                                    .addHeader("Content-Type", "application/vnd.org.jfrog.artifactory.storage.ItemCreated+json;charset=ISO-8859-1")
+                                    .addHeader("X-Artifactory-Id", "c2ba7b5d6d0ce49c:-6509cd21:157dd63986a:-8000")
+                                    .addHeader("Location", "http://localhost:80/releases/com.intershop.testproject/project1a/1.0.0/jars/project1a-jar-1.0.0.jar")
+                                    .addHeader("Cache-Control", "no-cache")
+                                    .setBody(getResponse('artifactoryReleaseArtifact1a.response'))
+                        } else if(path.contains('2b')) {
+                            artifactoryResponse = new MockResponse()
+                                    .addHeader("Content-Type", "application/vnd.org.jfrog.artifactory.storage.ItemCreated+json;charset=ISO-8859-1")
+                                    .addHeader("X-Artifactory-Id", "c2ba7b5d6d0ce49c:-6509cd21:157dd63986a:-8000")
+                                    .addHeader("Location", "http://localhost:80/releases/com.intershop.testproject/project2b/1.0.0/jars/project2b-jar-1.0.0.jar")
+                                    .addHeader("Cache-Control", "no-cache")
+                                    .setBody(getResponse('artifactoryReleaseArtifact2b.response'))
+                        } else {
+                            if(path.contains('com.intershop')) {
+                                artifactoryResponse = new MockResponse()
+                                        .addHeader("Content-Type", "application/vnd.org.jfrog.artifactory.storage.ItemCreated+json;charset=ISO-8859-1")
+                                        .addHeader("X-Artifactory-Id", "c2ba7b5d6d0ce49c:-6509cd21:157dd63986a:-8000")
+                                        .addHeader("Location", "http://localhost:80/releases/com.intershop/testProject/1.1.0/jars/testProject-jar-1.1.0.jar")
+                                        .addHeader("Cache-Control", "no-cache")
+                                        .setBody(getResponse('artifactoryReleaseArtifact.response'))
+                            } else if(path.contains('com/intershop')) {
+                                artifactoryResponse = new MockResponse()
+                                        .addHeader("Content-Type", "application/vnd.org.jfrog.artifactory.storage.ItemCreated+json;charset=ISO-8859-1")
+                                        .addHeader("X-Artifactory-Id", "c2ba7b5d6d0ce49c:-6509cd21:157dd63986a:-8000")
+                                        .addHeader("Location", "http://localhost:80/releases/com/intershop/testProject/1.1.0/jars/testProject-jar-1.1.0.jar")
+                                        .addHeader("Cache-Control", "no-cache")
+                                        .setBody(getResponse('artifactoryReleaseArtifactMaven.response'))
+                            }
+                        }
+                        return artifactoryResponse
+                    }
+                    if (path.startsWith('/releases') && (path.contains('ivy') || path.contains('pom'))) {
+                        uploadlist.add(path)
+                        if(path.contains('1a')) {
+                            artifactoryResponse = new MockResponse()
+                                    .addHeader("Content-Type", "application/vnd.org.jfrog.artifactory.storage.ItemCreated+json;charset=ISO-8859-1")
+                                    .addHeader("X-Artifactory-Id", "c2ba7b5d6d0ce49c:-6509cd21:157dd63986a:-8000")
+                                    .addHeader("Location", "http://localhost:80/releases/com.intershop.testproject/project1a/1.0.0/ivys/ivy-1.0.0.xml")
+                                    .addHeader("Cache-Control", "no-cache")
+                                    .setBody(getResponse('artifactoryReleaseIvy1a.response'))
+                        } else if(path.contains('2b')) {
+                            artifactoryResponse = new MockResponse()
+                                    .addHeader("Content-Type", "application/vnd.org.jfrog.artifactory.storage.ItemCreated+json;charset=ISO-8859-1")
+                                    .addHeader("X-Artifactory-Id", "c2ba7b5d6d0ce49c:-6509cd21:157dd63986a:-8000")
+                                    .addHeader("Location", "http://localhost:80/releases/com.intershop.testproject/project2b/1.0.0/ivys/ivy-1.0.0.xml")
+                                    .addHeader("Cache-Control", "no-cache")
+                                    .setBody(getResponse('artifactoryReleaseIvy2b.response'))
+                        } else {
+                            if(path.contains('com.intershop')) {
+                                artifactoryResponse = new MockResponse()
+                                        .addHeader("Content-Type", "application/vnd.org.jfrog.artifactory.storage.ItemCreated+json;charset=ISO-8859-1")
+                                        .addHeader("X-Artifactory-Id", "c2ba7b5d6d0ce49c:-6509cd21:157dd63986a:-8000")
+                                        .addHeader("Location", "http://localhost:80/releases/com.intershop/testProject/1.1.0/ivys/ivy-1.1.0.xml")
+                                        .addHeader("Cache-Control", "no-cache")
+                                        .setBody(getResponse('artifactoryReleaseIvy.response'))
+                            } else if(path.contains('com/intershop')) {
+                                artifactoryResponse = new MockResponse()
+                                        .addHeader("Content-Type", "application/vnd.org.jfrog.artifactory.storage.ItemCreated+json;charset=ISO-8859-1")
+                                        .addHeader("X-Artifactory-Id", "c2ba7b5d6d0ce49c:-6509cd21:157dd63986a:-8000")
+                                        .addHeader("Location", "http://localhost:80/artifactory/releases/com/intershop/testProject/1.1.0/testProject-1.1.0.pom")
+                                        .addHeader("Cache-Control", "no-cache")
+                                        .setBody(getResponse('artifactoryReleasePomMaven.response'))
+                            }
+                        }
+                        return artifactoryResponse
+                    }
+                    if (path.startsWith('/snapshots') && path.contains('jars')) {
+                        uploadlist.add(path)
+                        if(path.contains('1a')) {
+                            artifactoryResponse = new MockResponse()
+                                    .addHeader("Content-Type", "application/vnd.org.jfrog.artifactory.storage.ItemCreated+json;charset=ISO-8859-1")
+                                    .addHeader("X-Artifactory-Id", "c2ba7b5d6d0ce49c:-6509cd21:157dd63986a:-8000")
+                                    .addHeader("Location", "http://localhost:80/snapshots/com.intershop.testproject/project1a/1.0.0-SNAPSHOT/jars/project1a-jar-1.0.0-SNAPSHOT.jar")
+                                    .addHeader("Cache-Control", "no-cache")
+                                    .setBody(getResponse('artifactorySnapshotArtifact1a.response'))
+                        } else if(path.contains('2b')) {
+                            artifactoryResponse = new MockResponse()
+                                    .addHeader("Content-Type", "application/vnd.org.jfrog.artifactory.storage.ItemCreated+json;charset=ISO-8859-1")
+                                    .addHeader("X-Artifactory-Id", "c2ba7b5d6d0ce49c:-6509cd21:157dd63986a:-8000")
+                                    .addHeader("Location", "http://localhost:80/snapshots/com.intershop.testproject/project2b/1.0.0-SNAPSHOT/jars/project2b-jar-1.0.0-SNAPSHOT.jar")
+                                    .addHeader("Cache-Control", "no-cache")
+                                    .setBody(getResponse('artifactorySnapshotArtifact2b.response'))
+                        } else {
+                            artifactoryResponse = new MockResponse()
+                                    .addHeader("Content-Type", "application/vnd.org.jfrog.artifactory.storage.ItemCreated+json;charset=ISO-8859-1")
+                                    .addHeader("X-Artifactory-Id", "c2ba7b5d6d0ce49c:-6509cd21:157dd63986a:-8000")
+                                    .addHeader("Location", "http://localhost:80/snapshots/com.intershop/testProject/1.0.0-SNAPSHOT/jars/testProject-jar-1.0.0-SNAPSHOT.jar")
+                                    .addHeader("Cache-Control", "no-cache")
+                                    .setBody(getResponse('artifactorySnapshotArtifact.response'))
+                        }
+                        return artifactoryResponse
+                    }
+                    if (path.startsWith('/snapshots') && path.contains('ivys')) {
+                        uploadlist.add(path)
+                        if(path.contains('1a')) {
+                            artifactoryResponse = new MockResponse()
+                                    .addHeader("Content-Type", "application/vnd.org.jfrog.artifactory.storage.ItemCreated+json;charset=ISO-8859-1")
+                                    .addHeader("X-Artifactory-Id", "c2ba7b5d6d0ce49c:-6509cd21:157dd63986a:-8000")
+                                    .addHeader("Location", "http://localhost:80/snapshots/com.intershop.testproject/project1a/1.0.0-SNAPSHOT/ivys/ivy-1.0.0-SNAPSHOT.xml")
+                                    .addHeader("Cache-Control", "no-cache")
+                                    .setBody(getResponse('artifactorySnapshotIvy1a.response'))
+                        } else if(path.contains('2b')) {
+                            artifactoryResponse = new MockResponse()
+                                    .addHeader("Content-Type", "application/vnd.org.jfrog.artifactory.storage.ItemCreated+json;charset=ISO-8859-1")
+                                    .addHeader("X-Artifactory-Id", "c2ba7b5d6d0ce49c:-6509cd21:157dd63986a:-8000")
+                                    .addHeader("Location", "http://localhost:80/snapshots/com.intershop.testproject/project2b/1.0.0-SNAPSHOT/ivys/ivy-1.0.0-SNAPSHOT.xml")
+                                    .addHeader("Cache-Control", "no-cache")
+                                    .setBody(getResponse('artifactorySnapshotIvy2b.response'))
+                        } else {
+                            artifactoryResponse = new MockResponse()
+                                    .addHeader("Content-Type", "application/vnd.org.jfrog.artifactory.storage.ItemCreated+json;charset=ISO-8859-1")
+                                    .addHeader("X-Artifactory-Id", "c2ba7b5d6d0ce49c:-6509cd21:157dd63986a:-8000")
+                                    .addHeader("Location", "http://localhost:80/snapshots/com.intershop/testProject/1.0.0-SNAPSHOT/ivys/ivy-1.0.0-SNAPSHOT.xml")
+                                    .addHeader("Cache-Control", "no-cache")
+                                    .setBody(getResponse('artifactorySnapshotIvy.response'))
+                        }
+                        return artifactoryResponse
+                    }
+                    if (path.startsWith('/api/system/version')) {
+                        artifactoryResponse = new MockResponse()
+                                .addHeader("Content-Type", "application/vnd.org.jfrog.artifactory.system.Version+json")
+                                .addHeader("X-Artifactory-Id", "c2ba7b5d6d0ce49c:-6509cd21:157dd63986a:-8000")
+                                .addHeader("Cache-Control", "no-cache")
+                                .setBody(getResponse('artifactoryApiVersion.response'))
+                        return artifactoryResponse
+                    }
+                    if (path.startsWith('/api/build')) {
+                        artifactoryResponse = new MockResponse()
+                                .addHeader("Content-Type", "application/vnd.org.jfrog.artifactory.system.Version+json")
+                                .addHeader("X-Artifactory-Id", "c2ba7b5d6d0ce49c:-6509cd21:157dd63986a:-8000")
+                                .addHeader("Cache-Control", "no-cache")
+                                .setResponseCode(204)
+                        return artifactoryResponse
+                    }
+                }
                 if(path.startsWith('/nexus/service/local/staging/profile_evaluate')) {
                     MockResponse nexus_response = new MockResponse()
                             .addHeader("Content-Type", "application/json; charset=utf-8")

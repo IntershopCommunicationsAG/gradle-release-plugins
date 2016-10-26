@@ -1,5 +1,5 @@
 = Gradle Release Plugins for Intershop
-:latestRevision: 2.1.0
+:latestRevision: 3.0.0
 
 == Summary
 This collection of plugins adds special release functionality and encapsulates specific configurations and task dependencies.
@@ -205,6 +205,127 @@ RUNONCI=true
 export ORG_GRADLE_PROJECT_buildEnvironmentProperties ORG_GRADLE_PROJECT_testEnvironmentProperties NEXUSBASEURL
 export NEXUSUSERNAME NEXUSUSERPASSWD JIRABASEURL JIRAUSERPASSWD JIRAUSERPASSWD SCM_USERNAME SCM_PASSWORD
 export DISABLE_LOCAL_REPO RUNONCI
+
+# show Gradle version
+sh ./gradlew --version
+
+----
+
+== Artifactory Publish Configuration Plugin
+It applies the following plugins to the root project: +
+https://www.jfrog.com/confluence/display/RTF/Gradle+Artifactory+Plugin[Gradle Artifactory Plugin] +
+https://github.com/IntershopCommunicationsAG/jiraconnector-gradle-plugin[Gradle Plugin for Editing Atlassian Jira Issues]
+
+The ivy pattern configuration is used from +
+https://github.com/IntershopCommunicationsAG/repoconfig-gradle-plugin['Repository Configuration Init Script Plugin']*[:
+
+It requires, that the https://github.com/IntershopCommunicationsAG/scmversion-gradle-plugin[SCM Version Plugin] is applied to the project.
+It supports also the https://github.com/IntershopCommunicationsAG/buildinfo-gradle-plugin[Buildinfo Plugin]. These properties
+are used for the cofniguration of Gradle Artifactory Plugin.
+
+The configuration and the execution of tasks depends on the version number.
+The editing of Jira issues will be executed only for release versions without a "SNAPSHOT" extension.
+Furthermore the snapshot repository key is used if the version is a snapshot version.
+
+=== Usage
+To use the Artifactory publish configuration plugin, include the following in your build script:
+
+[source,groovy,subs="attributes"]
+----
+plugins {
+    id 'com.intershop.gradle.artifactorypublish-configuration' version '{latestRevision}'
+}
+
+artifactory {
+    publish {
+        // for ivy publications
+        repository {
+            maven = false
+        }
+        // list of publication names
+        defaults {
+            publications('ivy')
+        }
+    }
+}
+----
+
+The behaviour of the plugin is controlled by environment variables, so that the plugin can be applied to the project without exceptions.
+This kind of configuration is also easier to maintain on the CI server.
+
+The target repository key for publishing depends on the version number. +
+ - Snapshots - version ends with SNAPSHOT - will be published to the snapshot repository. +
+ - All other artifacts will be published to the release repository.
+
+It is necessary to specify all publication names for publishing with Artifactory Gradle plugin.
+Furthermore it is necessary to specify the kind of publication. For ivy publications it is necessary to set `publish.repository.maven` to `false`.
+
+For release versions the field 'Fix Version/s' JIRA issues will be extended with the current build version. It is possible to change the field with the project property 'jiraFieldName'.
+
+[cols="17%,17%,65%", width="95%", options="header"]
+|===
+| System variable or Java system property | Project property  | Description
+
+| *RUNONCI*          | *runOnCI*         | This configuration must be true, if the project is used on a CI server.
+
+| *ARTIFACTORYBASEURL* | *artifactoryBaseURL* | The base url of the used Artifactory server.
+| *SNAPSHOTREPOKEY*      | *snapshotRepoKey*     | Repository key for publishing of snapshot builds
+| *RELEASEREPOKEY*       | *releaseRepoKey*      | Repository key for publishing of release builds.
+| *ARTIFACTORYUSERNAME*    | *artifactoryUserName*   | The username with the correct role/permissions for transfer
+| *ARTIFACTORYUSERPASSWD*  | *artifactoryUserPASSWD* | The password of the user.
+3+|These settings are dublicated from the https://github.com/IntershopCommunicationsAG/jiraconnector-gradle-plugin[Gradle Plugin for Editing Atlassian Jira Issues]
+| *JIRABASEURL*      | *jiraBaseURL*     | The base url of Atlassian Jira, e.g. http://jira/jira
+| *JIRAUSERNAME*     | *jiraUserName*    | The username with the correct role/permissions for editing issues
+| *JIRAUSERPASSWD*   | *jiraUserPASSWD*  | The password of the user.
+|                    | *jiraFieldName*   | The version string will be set to this field. Default: 'Fix Version/s'
+|===
+
+The properties can be set with files from an other source management system.
+[source,shell,subs="attributes"]
+----
+
+source /dev/stdin &lt;&lt;&lt; "$(curl -s https://gitlab/user/build-configuration/raw/master/configuration.file?private_token=token)"
+
+sh ./gradlew clean test publish -s
+
+----
+
+.configuration.file
+[source,shell,subs="attributes"]
+----
+# configuration for assembly tests
+ORG_GRADLE_PROJECT_buildEnvironmentProperties=${WORKINGDIR}/environment/intershop7-release-environment.properties
+ORG_GRADLE_PROJECT_testEnvironmentProperties=${WORKINGDIR}/environment/intershop7-release-environment.properties
+
+# configuration for Artifactory publishing
+ARTIFACTORYBASEURL=http://repository/artifactory
+
+SNAPSHOTREPOKEY=libs-snapshot-local
+RELEASEREPOKEY=libs-release-local
+
+ARTIFACTORYUSERNAME=deployUser
+ARTIFACTORYUSERPASSWD=deployUserPassword
+
+# configuration for Gradle Plugin for Editing Atlassian Jira Issues
+JIRABASEURL=https://jira
+JIRAUSERNAME=jiraUser
+JIRAUSERPASSWD=jiraUserPassword
+
+# configuration for SCM Version Plugin
+SCM_USERNAME=scmuser
+SCM_PASSWORD=password
+
+# configuration for Repository Configuration Init Script Plugin
+DISABLE_LOCAL_REPO=true
+
+# configuration for plugins
+RUNONCI=true
+
+# export variables
+export ORG_GRADLE_PROJECT_buildEnvironmentProperties ORG_GRADLE_PROJECT_testEnvironmentProperties ARTIFACTORYBASEURL
+export SNAPSHOTREPOKEY RELEASEREPOKEY ARTIFACTORYUSERNAME ARTIFACTORYUSERPASSWD JIRABASEURL JIRAUSERPASSWD JIRAUSERPASSWD
+export SCM_USERNAME SCM_PASSWORD DISABLE_LOCAL_REPO RUNONCI
+
 
 # show Gradle version
 sh ./gradlew --version

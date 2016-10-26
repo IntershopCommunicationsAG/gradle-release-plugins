@@ -1,0 +1,18 @@
+{
+  "repo" : "releases",
+  "path" : "/com.intershop.testproject/project1a/1.0.0-SNAPSHOT/jars/project1a-jar-1.0.0-SNAPSHOT.jar",
+  "created" : "2016-10-25T09:59:25.488+02:00",
+  "createdBy" : "admin",
+  "downloadUri" : "http://localhost:80//releases/com.intershop.testproject/project1a/1.0.0-SNAPSHOT/jars/project1a-jar-1.0.0-SNAPSHOT.jar",
+  "mimeType" : "application/java-archive",
+  "size" : "1066",
+  "checksums" : {
+    "sha1" : "5b9e361098f6413d5f53cc8e4d91f10a3ad36270",
+    "md5" : "288102cb0885bc42af493c9379f3c252"
+  },
+  "originalChecksums" : {
+    "sha1" : "5b9e361098f6413d5f53cc8e4d91f10a3ad36270",
+    "md5" : "288102cb0885bc42af493c9379f3c252"
+  },
+  "uri" : "http://localhost:80//releases/com.intershop.testproject/project1a/1.0.0-SNAPSHOT/jars/project1a-jar-1.0.0-SNAPSHOT.jar"
+}
