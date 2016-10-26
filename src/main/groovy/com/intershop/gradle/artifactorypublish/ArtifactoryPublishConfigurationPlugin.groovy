@@ -17,6 +17,7 @@ package com.intershop.gradle.artifactorypublish
 
 import com.intershop.gradle.buildinfo.BuildInfoExtension
 import com.intershop.gradle.jiraconnector.JiraConnectorPlugin
+import com.intershop.gradle.repoconfig.RepoConfigRegistry
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -30,15 +31,6 @@ class ArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
     // run on CI server
     public final static String RUNONCI_ENV = 'RUNONCI'
     public final static String RUNONCI_PRJ = 'runOnCI'
-
-    /** Repository Configuration - Start **/
-    // Repo SNAPSHOT URL
-    public final static String SNAPSHOT_URL_ENV = 'SNAPSHOTURL'
-    public final static String SNAPSHOT_URL_PRJ = 'snapshotURL'
-
-    // Repo RELEASE URL
-    public final static String RELEASE_URL_ENV = 'RELEASEURL'
-    public final static String RELEASE_URL_PRJ = 'releaseURL'
 
     // Repo SNAPSHOT Path (based on Nexus Base URL configuration)
     public final static String SNAPSHOT_KEY_ENV = 'SNAPSHOTREPOKEY'
@@ -107,8 +99,8 @@ class ArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
                             password = repoUserPassword
 
                             ivy {
-                                ivyLayout = '[organisation]/[module]/[revision]/[type]s/ivy-[revision].xml'
-                                artifactLayout = '[organisation]/[module]/[revision]/[ext]s/[artifact]-[type](-[classifier])-[revision].[ext]'
+                                ivyLayout = RepoConfigRegistry.ivyPattern
+                                artifactLayout = RepoConfigRegistry.artifactPattern
                                 mavenCompatible = false
                             }
                         }
@@ -117,27 +109,26 @@ class ArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
                                 properties = ['build.java.version': infoExtension.infoProvider.javaVersion,
                                               'source.java.version': infoExtension.infoProvider.javaSourceCompatibility ?: infoExtension.infoProvider.javaVersion.split('_')[0],
                                               'target.java.version': infoExtension.infoProvider.javaTargetCompatibility ?: infoExtension.infoProvider.javaVersion.split('_')[0],
-                                              'build.status': "${infoExtension.infoProvider.projectStatus?:'unknown'}",
-                                              'build.date': "${infoExtension.infoProvider.OSTime?:'unknown'}",
-                                              'gradle.version': "${infoExtension.infoProvider.gradleVersion?:'unknown'}",
-                                              'gradle.rootproject': "${infoExtension.infoProvider.rootProject?:'unknown'}",
-                                              'scm.type': "${infoExtension.scmProvider.SCMType?:'unknown'}",
-                                              'scm.branch.name': "${infoExtension.scmProvider.branchName?:'unknown'}",
-                                              'scm.change.time': "${infoExtension.scmProvider.lastChangeTime?:'unknown'}"
+                                              'build.status': infoExtension.infoProvider.projectStatus?:'unknown',
+                                              'build.date': infoExtension.infoProvider.OSTime?:'unknown',
+                                              'gradle.version': infoExtension.infoProvider.gradleVersion?:'unknown',
+                                              'gradle.rootproject': infoExtension.infoProvider.rootProject?:'unknown',
+                                              'scm.type': infoExtension.scmProvider.SCMType?:'unknown',
+                                              'scm.branch.name': infoExtension.scmProvider.branchName?:'unknown',
+                                              'scm.change.time': infoExtension.scmProvider.lastChangeTime?:'unknown'
                                              ]
                             }
                         }
-                        if(infoExtension) {
-                            clientConfig.info.setBuildName("${infoExtension.ciProvider.buildJob?:project.name}")
-                            clientConfig.info.setBuildNumber("${infoExtension.ciProvider.buildNumber?:'' + new java.util.Random(System.currentTimeMillis()).nextInt(20000)}")
-                            clientConfig.info.setBuildTimestamp("${infoExtension.ciProvider.buildTime?:'unknown'}")
-                            clientConfig.info.setBuildUrl("${infoExtension.ciProvider.buildUrl?:'unknown'}")
-                            clientConfig.info.setVcsRevision("${infoExtension.scmProvider.SCMRevInfo?:'unknown'}")
-                            clientConfig.info.setVcsUrl("${infoExtension.scmProvider.SCMOrigin?:'unknown'}")
-                        }
+                    }
+                    if(infoExtension) {
+                        clientConfig.info.setBuildName(infoExtension.ciProvider.buildJob?:project.name)
+                        clientConfig.info.setBuildNumber(infoExtension.ciProvider.buildNumber?:'' + new java.util.Random(System.currentTimeMillis()).nextInt(20000))
+                        clientConfig.info.setBuildTimestamp(infoExtension.ciProvider.buildTime?:'' + (new Date()).toTimestamp())
+                        clientConfig.info.setBuildUrl(infoExtension.ciProvider.buildUrl?:'unknown')
+                        clientConfig.info.setVcsRevision(infoExtension.scmProvider.SCMRevInfo?:'unknown')
+                        clientConfig.info.setVcsUrl(infoExtension.scmProvider.SCMOrigin?:'unknown')
                     }
                 }
-
                 project.rootProject.allprojects {
                     it.plugins.apply(ArtifactoryPlugin)
                 }
@@ -189,7 +180,6 @@ class ArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
                 }
             }
         }
-
     }
 
     /**
