@@ -105,28 +105,35 @@ class ArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
                             }
                         }
                         defaults {
-                            if(infoExtension) {
-                                properties = ['build.java.version': infoExtension.infoProvider.javaVersion,
-                                              'source.java.version': infoExtension.infoProvider.javaSourceCompatibility ?: infoExtension.infoProvider.javaVersion.split('_')[0],
-                                              'target.java.version': infoExtension.infoProvider.javaTargetCompatibility ?: infoExtension.infoProvider.javaVersion.split('_')[0],
-                                              'build.status': infoExtension.infoProvider.projectStatus?:'unknown',
-                                              'build.date': infoExtension.infoProvider.OSTime?:'unknown',
-                                              'gradle.version': infoExtension.infoProvider.gradleVersion?:'unknown',
-                                              'gradle.rootproject': infoExtension.infoProvider.rootProject?:'unknown',
-                                              'scm.type': infoExtension.scmProvider.SCMType?:'unknown',
-                                              'scm.branch.name': infoExtension.scmProvider.branchName?:'unknown',
-                                              'scm.change.time': infoExtension.scmProvider.lastChangeTime?:'unknown'
+                            properties = ['build.java.version': infoExtension?.infoProvider.javaVersion,
+                                              'source.java.version': infoExtension?.infoProvider.javaSourceCompatibility ?: infoExtension?.infoProvider.javaVersion.split('_')[0],
+                                              'target.java.version': infoExtension?.infoProvider.javaTargetCompatibility ?: infoExtension?.infoProvider.javaVersion.split('_')[0],
+                                              'build.status': infoExtension?.infoProvider.projectStatus?:'unknown',
+                                              'build.date': infoExtension?.infoProvider.OSTime?:'unknown',
+                                              'gradle.version': infoExtension?.infoProvider.gradleVersion?:'unknown',
+                                              'gradle.rootproject': infoExtension?.infoProvider.rootProject?:'unknown',
+                                              'scm.type': infoExtension?.scmProvider.SCMType?:'unknown',
+                                              'scm.branch.name': infoExtension?.scmProvider.branchName?:'unknown',
+                                              'scm.change.time': infoExtension?.scmProvider.lastChangeTime?:'unknown'
                                              ]
-                            }
+                            publishBuildInfo = false
                         }
                     }
                     if(infoExtension) {
+                        String buildNumber = infoExtension.ciProvider.buildNumber?:'' + new java.util.Random(System.currentTimeMillis()).nextInt(20000)
+                        String buildTimeStamp = infoExtension.ciProvider.buildTime?:'' + (new Date()).toTimestamp()
+                        String vcsRevision = infoExtension.scmProvider.SCMRevInfo?:'unknown'
+
                         clientConfig.info.setBuildName(infoExtension.ciProvider.buildJob?:project.name)
-                        clientConfig.info.setBuildNumber(infoExtension.ciProvider.buildNumber?:'' + new java.util.Random(System.currentTimeMillis()).nextInt(20000))
-                        clientConfig.info.setBuildTimestamp(infoExtension.ciProvider.buildTime?:'' + (new Date()).toTimestamp())
+                        clientConfig.info.setBuildNumber(buildNumber)
+                        clientConfig.info.setBuildTimestamp(buildTimeStamp)
                         clientConfig.info.setBuildUrl(infoExtension.ciProvider.buildUrl?:'unknown')
-                        clientConfig.info.setVcsRevision(infoExtension.scmProvider.SCMRevInfo?:'unknown')
+                        clientConfig.info.setVcsRevision(vcsRevision)
                         clientConfig.info.setVcsUrl(infoExtension.scmProvider.SCMOrigin?:'unknown')
+
+                        clientConfig.publisher.addMatrixParam("build.number", buildNumber)
+                        clientConfig.publisher.addMatrixParam("vcs.revision", vcsRevision)
+                        clientConfig.publisher.addMatrixParam("build.timestamp", buildTimeStamp)
                     }
                 }
                 project.rootProject.allprojects {
