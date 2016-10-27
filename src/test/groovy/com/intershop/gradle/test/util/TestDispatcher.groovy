@@ -35,8 +35,8 @@ class TestDispatcher {
                 String userAgent = request.headers.get('User-Agent')
 
                 if(userAgent && userAgent.contains('ArtifactoryBuildClient')) {
-                    /**
                     MockResponse artifactoryResponse = null
+                    /**
                     println "---------------------------"
                     println request.toString()
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();

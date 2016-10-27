@@ -16,6 +16,7 @@
 package com.intershop.gradle.artifactorypublish
 
 import com.intershop.gradle.buildinfo.BuildInfoExtension
+import com.intershop.gradle.buildinfo.BuildInfoPlugin
 import com.intershop.gradle.jiraconnector.JiraConnectorPlugin
 import com.intershop.gradle.repoconfig.RepoConfigRegistry
 import org.gradle.api.GradleException
@@ -65,7 +66,7 @@ class ArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
     /** Jira configuration - End **/
 
     public void apply(Project project) {
-
+        project.rootProject.plugins.apply(BuildInfoPlugin)
         project.rootProject.plugins.apply(ArtifactoryPlugin)
 
         String runOnCI = getVariable(project, RUNONCI_ENV, RUNONCI_PRJ, 'false')
@@ -119,22 +120,21 @@ class ArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
                             publishBuildInfo = false
                         }
                     }
-                    if(infoExtension) {
-                        String buildNumber = infoExtension.ciProvider.buildNumber?:'' + new java.util.Random(System.currentTimeMillis()).nextInt(20000)
-                        String buildTimeStamp = infoExtension.ciProvider.buildTime?:'' + (new Date()).toTimestamp()
-                        String vcsRevision = infoExtension.scmProvider.SCMRevInfo?:'unknown'
 
-                        clientConfig.info.setBuildName(infoExtension.ciProvider.buildJob?:project.name)
-                        clientConfig.info.setBuildNumber(buildNumber)
-                        clientConfig.info.setBuildTimestamp(buildTimeStamp)
-                        clientConfig.info.setBuildUrl(infoExtension.ciProvider.buildUrl?:'unknown')
-                        clientConfig.info.setVcsRevision(vcsRevision)
-                        clientConfig.info.setVcsUrl(infoExtension.scmProvider.SCMOrigin?:'unknown')
+                    String buildNumber = infoExtension.ciProvider.buildNumber?:'' + new java.util.Random(System.currentTimeMillis()).nextInt(20000)
+                    String buildTimeStamp = infoExtension.ciProvider.buildTime?:'' + (new Date()).toTimestamp()
+                    String vcsRevision = infoExtension.scmProvider.SCMRevInfo?:'unknown'
 
-                        clientConfig.publisher.addMatrixParam("build.number", buildNumber)
-                        clientConfig.publisher.addMatrixParam("vcs.revision", vcsRevision)
-                        clientConfig.publisher.addMatrixParam("build.timestamp", buildTimeStamp)
-                    }
+                    clientConfig.info.setBuildName(infoExtension.ciProvider.buildJob?:project.name)
+                    clientConfig.info.setBuildNumber(buildNumber)
+                    clientConfig.info.setBuildTimestamp(buildTimeStamp)
+                    clientConfig.info.setBuildUrl(infoExtension.ciProvider.buildUrl?:'unknown')
+                    clientConfig.info.setVcsRevision(vcsRevision)
+                    clientConfig.info.setVcsUrl(infoExtension.scmProvider.SCMOrigin?:'unknown')
+
+                    clientConfig.publisher.addMatrixParam("build.number", buildNumber)
+                    clientConfig.publisher.addMatrixParam("vcs.revision", vcsRevision)
+                    clientConfig.publisher.addMatrixParam("build.timestamp", buildTimeStamp)
                 }
                 project.rootProject.allprojects {
                     it.plugins.apply(ArtifactoryPlugin)
