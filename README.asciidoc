@@ -214,14 +214,13 @@ sh ./gradlew --version
 == Artifactory Publish Configuration Plugin
 It applies the following plugins to the root project: +
 https://www.jfrog.com/confluence/display/RTF/Gradle+Artifactory+Plugin[Gradle Artifactory Plugin] +
-https://github.com/IntershopCommunicationsAG/jiraconnector-gradle-plugin[Gradle Plugin for Editing Atlassian Jira Issues]
+https://github.com/IntershopCommunicationsAG/jiraconnector-gradle-plugin[Gradle Plugin for Editing Atlassian Jira Issues] +
+https://github.com/IntershopCommunicationsAG/buildinfo-gradle-plugin[Buildinfo Plugin] These properties are used for the configuration of Gradle Artifactory Plugin.
 
 The ivy pattern configuration is used from +
 https://github.com/IntershopCommunicationsAG/repoconfig-gradle-plugin['Repository Configuration Init Script Plugin']*[:
 
 It requires, that the https://github.com/IntershopCommunicationsAG/scmversion-gradle-plugin[SCM Version Plugin] is applied to the project.
-It supports also the https://github.com/IntershopCommunicationsAG/buildinfo-gradle-plugin[Buildinfo Plugin]. These properties
-are used for the cofniguration of Gradle Artifactory Plugin.
 
 The configuration and the execution of tasks depends on the version number.
 The editing of Jira issues will be executed only for release versions without a "SNAPSHOT" extension.

@@ -36,7 +36,14 @@ class TestDispatcher {
 
                 if(userAgent && userAgent.contains('ArtifactoryBuildClient')) {
                     MockResponse artifactoryResponse = null
-
+                    /**
+                    println "---------------------------"
+                    println request.toString()
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    request.body.buffer().copyTo(baos)
+                    println baos.toString()
+                    println "---------------------------"
+                    **/
                     if (path.startsWith('/releases') && path.contains('jar')) {
                         uploadlist.add(path)
                         if(path.contains('1a')) {
