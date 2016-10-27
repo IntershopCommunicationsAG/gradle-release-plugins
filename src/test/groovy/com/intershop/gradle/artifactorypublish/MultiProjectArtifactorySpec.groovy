@@ -106,6 +106,7 @@ class MultiProjectArtifactorySpec extends AbstractIntegrationSpec {
                         }
                         defaults {
                             publications('ivy')
+                            properties = ['testBla': 'testBla']
                         }
                     }
                 }

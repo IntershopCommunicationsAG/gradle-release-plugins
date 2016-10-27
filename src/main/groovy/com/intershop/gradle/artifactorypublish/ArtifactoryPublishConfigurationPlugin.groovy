@@ -105,20 +105,6 @@ class ArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
                                 mavenCompatible = false
                             }
                         }
-                        defaults {
-                            properties = ['build.java.version': infoExtension?.infoProvider.javaVersion,
-                                              'source.java.version': infoExtension?.infoProvider.javaSourceCompatibility ?: infoExtension?.infoProvider.javaVersion.split('_')[0],
-                                              'target.java.version': infoExtension?.infoProvider.javaTargetCompatibility ?: infoExtension?.infoProvider.javaVersion.split('_')[0],
-                                              'build.status': infoExtension?.infoProvider.projectStatus?:'unknown',
-                                              'build.date': infoExtension?.infoProvider.OSTime?:'unknown',
-                                              'gradle.version': infoExtension?.infoProvider.gradleVersion?:'unknown',
-                                              'gradle.rootproject': infoExtension?.infoProvider.rootProject?:'unknown',
-                                              'scm.type': infoExtension?.scmProvider.SCMType?:'unknown',
-                                              'scm.branch.name': infoExtension?.scmProvider.branchName?:'unknown',
-                                              'scm.change.time': infoExtension?.scmProvider.lastChangeTime?:'unknown'
-                                             ]
-                            publishBuildInfo = false
-                        }
                     }
 
                     String buildNumber = infoExtension.ciProvider.buildNumber?:'' + new java.util.Random(System.currentTimeMillis()).nextInt(20000)
@@ -132,9 +118,20 @@ class ArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
                     clientConfig.info.setVcsRevision(vcsRevision)
                     clientConfig.info.setVcsUrl(infoExtension.scmProvider.SCMOrigin?:'unknown')
 
-                    clientConfig.publisher.addMatrixParam("build.number", buildNumber)
-                    clientConfig.publisher.addMatrixParam("vcs.revision", vcsRevision)
-                    clientConfig.publisher.addMatrixParam("build.timestamp", buildTimeStamp)
+                    clientConfig.publisher.addMatrixParam('build.number', buildNumber)
+                    clientConfig.publisher.addMatrixParam('vcs.revision', vcsRevision)
+                    clientConfig.publisher.addMatrixParam('build.timestamp', buildTimeStamp)
+
+                    clientConfig.publisher.addMatrixParam('build.java.version', infoExtension.infoProvider.javaVersion)
+                    clientConfig.publisher.addMatrixParam('source.java.version', infoExtension.infoProvider.javaSourceCompatibility ?: infoExtension.infoProvider.javaVersion.split('_')[0])
+                    clientConfig.publisher.addMatrixParam('target.java.version', infoExtension?.infoProvider.javaTargetCompatibility ?: infoExtension?.infoProvider.javaVersion.split('_')[0])
+                    clientConfig.publisher.addMatrixParam('build.status', infoExtension?.infoProvider.projectStatus?:'unknown')
+                    clientConfig.publisher.addMatrixParam('build.date', infoExtension?.infoProvider.OSTime?:'unknown')
+                    clientConfig.publisher.addMatrixParam('gradle.version', infoExtension?.infoProvider.gradleVersion?:'unknown')
+                    clientConfig.publisher.addMatrixParam('gradle.rootproject', infoExtension?.infoProvider.rootProject?:'unknown')
+                    clientConfig.publisher.addMatrixParam( 'scm.type', infoExtension?.scmProvider.SCMType?:'unknown')
+                    clientConfig.publisher.addMatrixParam('scm.branch.name', infoExtension?.scmProvider.branchName?:'unknown')
+                    clientConfig.publisher.addMatrixParam('scm.change.time', infoExtension?.scmProvider.lastChangeTime?:'unknown')
                 }
                 project.rootProject.allprojects {
                     it.plugins.apply(ArtifactoryPlugin)
