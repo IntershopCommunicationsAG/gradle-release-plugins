@@ -92,6 +92,9 @@ class ArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
                 ArtifactoryPluginConvention artifactoryPluginConvention = project.rootProject.convention.getPlugin(ArtifactoryPluginConvention)
                 BuildInfoExtension infoExtension = project.extensions.findByType(BuildInfoExtension)
 
+                // no build information in jar files
+                infoExtension.noJarInfo = true
+
                 project.artifactory {
                     contextUrl = repoBaseURL
                     publish {
@@ -129,7 +132,7 @@ class ArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
                     clientConfig.publisher.addMatrixParam('build.date', infoExtension?.infoProvider.OSTime?:'unknown')
                     clientConfig.publisher.addMatrixParam('gradle.version', infoExtension?.infoProvider.gradleVersion?:'unknown')
                     clientConfig.publisher.addMatrixParam('gradle.rootproject', infoExtension?.infoProvider.rootProject?:'unknown')
-                    clientConfig.publisher.addMatrixParam( 'scm.type', infoExtension?.scmProvider.SCMType?:'unknown')
+                    clientConfig.publisher.addMatrixParam('scm.type', infoExtension?.scmProvider.SCMType?:'unknown')
                     clientConfig.publisher.addMatrixParam('scm.branch.name', infoExtension?.scmProvider.branchName?:'unknown')
                     clientConfig.publisher.addMatrixParam('scm.change.time', infoExtension?.scmProvider.lastChangeTime?:'unknown')
                 }

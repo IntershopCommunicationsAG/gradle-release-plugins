@@ -39,9 +39,6 @@ class MultiProjectArtifactorySpec extends AbstractIntegrationSpec {
                                                 id 'ivy-publish'
                                             }
 
-                                            sourceCompatibility = 1.8
-                                            targetCompatibility = 1.8
-
                                             if(project.hasProperty("releaseWithJavaDoc") && project.ext.releaseWithJavaDoc.toBoolean()) {
                                               println 'CREATE JAVADOC'
                                             }
@@ -60,9 +57,6 @@ class MultiProjectArtifactorySpec extends AbstractIntegrationSpec {
                                                 id 'java'
                                                 id 'maven-publish'
                                             }
-
-                                            sourceCompatibility = 1.8
-                                            targetCompatibility = 1.8
 
                                             if(project.hasProperty("releaseWithJavaDoc") && project.ext.releaseWithJavaDoc.toBoolean()) {
                                               println 'CREATE JAVADOC'
