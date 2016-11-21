@@ -15,15 +15,15 @@
  */
 
 
-package com.intershop.gradle.simplepublish
+package com.intershop.gradle.nexuspublish
 
 import com.intershop.gradle.test.AbstractProjectSpec
 import org.gradle.api.Plugin
 
-class ProjectPluginSpec extends AbstractProjectSpec  {
+class ProjectNexusPublishPluginSpec extends AbstractProjectSpec  {
 
     @Override
     Plugin getPlugin() {
-        return new PublishConfigurationPlugin()
+        return new NexusPublishConfigurationPlugin()
     }
 }
