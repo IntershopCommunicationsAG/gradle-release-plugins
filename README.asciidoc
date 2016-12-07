@@ -153,11 +153,11 @@ For release versions the field 'Fix Version/s' JIRA issues will be extended with
 3+|The host url is used from the general setting of the base URL.
 | *SNAPSHOTPATH*     | *snapshotPath*    | Path for Snapshot builds.
 | *RELEASEPATH*      | *releasePath*     | Path for release builds.
-3+|These settings are dublicated from the https://github.com/IntershopCommunicationsAG/nexusstaging-gradle-plugin[Nexus Staging Gradle Plugin]
+3+|These settings are duplicated from the https://github.com/IntershopCommunicationsAG/nexusstaging-gradle-plugin[Nexus Staging Gradle Plugin]
 | *NEXUSBASEURL*     | *nexusBaseURL*    | The base url of the repository server, e.g. http://nexus/nexus
 | *NEXUSUSERNAME*    | *nexusUserName*   | The username with the correct role/permissions for transfer
 | *NEXUSUSERPASSWD*  | *nexusUserPASSWD* | The password of the user.
-3+|These settings are dublicated from the https://github.com/IntershopCommunicationsAG/jiraconnector-gradle-plugin[Gradle Plugin for Editing Atlassian Jira Issues]
+3+|These settings are duplicated from the https://github.com/IntershopCommunicationsAG/jiraconnector-gradle-plugin[Gradle Plugin for Editing Atlassian Jira Issues]
 | *JIRABASEURL*      | *jiraBaseURL*     | The base url of Atlassian Jira, e.g. http://jira/jira
 | *JIRAUSERNAME*     | *jiraUserName*    | The username with the correct role/permissions for editing issues
 | *JIRAUSERPASSWD*   | *jiraUserPASSWD*  | The password of the user.
