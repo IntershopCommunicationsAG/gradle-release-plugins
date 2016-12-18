@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
-
 package com.intershop.gradle.artifactorypublish
 
 import com.intershop.gradle.test.AbstractIntegrationSpec
@@ -157,6 +155,88 @@ class MultiProjectArtifactorySpec extends AbstractIntegrationSpec {
         where:
         buildFileContent << [buildFileContentBase]
     }
+
+    /**
+    def 'test release publishing with artifactory and maven'() {
+        given:
+        String urlStr = server.url('/').toString()
+        List<String> upLoadList = []
+        Map<String,String> responses = [:]
+
+        server.setDispatcher(TestDispatcher.getIntegrationDispatcher(responses, upLoadList))
+
+        buildFile << """
+                plugins {
+                  id "maven-publish"
+                  id 'com.intershop.gradle.scmversion' version '1.3.0'
+                  id 'com.intershop.gradle.buildinfo' version '2.0.0'
+                  id 'com.intershop.gradle.artifactorypublish-configuration'
+                }
+
+                group = 'com.intershop.testproject'
+                version = '1.0.0'
+
+                artifactory {
+                    publish {
+                        defaults {
+                            publications('maven')
+                        }
+                    }
+                }
+
+                subprojects {
+                    group = 'com.intershop.testproject'
+                    version = rootProject.getVersion()
+                }
+        """.stripIndent()
+
+        File settingsfile = file('settings.gradle')
+        settingsfile << """
+            // define root proejct name
+            rootProject.name = 'p_testProject'
+        """.stripIndent()
+        createSubProjectJava('project1a', settingsfile, 'com.intereshop.a', buildFileContent, '1.0.0')
+        createSubProjectJava('project2b', settingsfile, 'com.intereshop.b', buildFileContent, '1.0.0')
+
+        File changelog = file('build/changelog/changelog.asciidoc')
+        changelog << """
+        = Change Log for 2.0.0
+
+        This list contains changes since version 1.0.0. +
+        Created: Sun Feb 21 17:11:48 CET 2016
+
+        [cols="5%,5%,90%", width="95%", options="header"]
+        |===
+        3+| ${issueKey} change on master (e6c62c43)
+        | | M |  gradle.properties
+        3+| remove unnecessary files (a2da48ad)
+        | | D | gradle/wrapper/gradle-wrapper.jar
+        | | D | gradle/wrapper/gradle-wrapper.properties
+        |===""".stripIndent()
+
+        when:
+        def result = getPreparedGradleRunner()
+                .withArguments('artifactoryPublish', '--exclude-task', 'changelog', '--stacktrace', '-d', "-DRUNONCI=true", '-PjiraFieldName=Labels', "-DARTIFACTORYBASEURL=${urlStr}", '-DSNAPSHOTREPOKEY=snapshots', '-DRELEASEREPOKEY=releases', '-DARTIFACTORYUSERNAME=admin', '-DARTIFACTORYUSERPASSWD=admin123', "-DJIRABASEURL=${urlStr}", '-DJIRAUSERNAME=admin', '-DJIRAUSERPASSWD=admin123', '-Dhttp.proxyHost=localhost', '-Dhttp.proxyPort=8200')
+                .build()
+
+        boolean upLoadListCheck = true
+        upLoadList.each {
+            upLoadListCheck &= it.contains('releases/com/intershop/testproject/')
+        }
+
+        then:
+        result.output.contains('CREATE JAVADOC')
+        result.task(':artifactoryPublish').outcome == SUCCESS
+        result.task(':setIssueField').outcome == SUCCESS
+        upLoadListCheck
+        upLoadList.size() == 4
+        responses.get('onebody').contains('"project":{"key":"ISTOOLS"}')
+        responses.get('onebody').contains('"issuetype":{"id":"10001"}')
+
+        where:
+        buildFileContent << [mavenBuildFileContentBase]
+    }
+    **/
 
     def 'test publishing without artifactory'() {
         given:
@@ -321,85 +401,6 @@ class MultiProjectArtifactorySpec extends AbstractIntegrationSpec {
         buildFileContent << [buildFileContentBase]
     }
 
-    def 'test release publishing with artifactory and maven'() {
-        given:
-        String urlStr = server.url('/').toString()
-        List<String> upLoadList = []
-        Map<String,String> responses = [:]
-
-        server.setDispatcher(TestDispatcher.getIntegrationDispatcher(responses, upLoadList))
-
-        buildFile << """
-                plugins {
-                  id "maven-publish"
-                  id 'com.intershop.gradle.scmversion' version '1.3.0'
-                  id 'com.intershop.gradle.buildinfo' version '2.0.0'
-                  id 'com.intershop.gradle.artifactorypublish-configuration'
-                }
-
-                group = 'com.intershop.testproject'
-                version = '1.0.0'
-
-                artifactory {
-                    publish {
-                        defaults {
-                            publications('maven')
-                        }
-                    }
-                }
-
-                subprojects {
-                    group = 'com.intershop.testproject'
-                    version = rootProject.getVersion()
-                }
-        """.stripIndent()
-
-        File settingsfile = file('settings.gradle')
-        settingsfile << """
-            // define root proejct name
-            rootProject.name = 'p_testProject'
-        """.stripIndent()
-        createSubProjectJava('project1a', settingsfile, 'com.intereshop.a', buildFileContent, '1.0.0')
-        createSubProjectJava('project2b', settingsfile, 'com.intereshop.b', buildFileContent, '1.0.0')
-
-        File changelog = file('build/changelog/changelog.asciidoc')
-        changelog << """
-        = Change Log for 2.0.0
-
-        This list contains changes since version 1.0.0. +
-        Created: Sun Feb 21 17:11:48 CET 2016
-
-        [cols="5%,5%,90%", width="95%", options="header"]
-        |===
-        3+| ${issueKey} change on master (e6c62c43)
-        | | M |  gradle.properties
-        3+| remove unnecessary files (a2da48ad)
-        | | D | gradle/wrapper/gradle-wrapper.jar
-        | | D | gradle/wrapper/gradle-wrapper.properties
-        |===""".stripIndent()
-
-        when:
-        def result = getPreparedGradleRunner()
-                .withArguments('artifactoryPublish', '--exclude-task', 'changelog', '--stacktrace', '-i', "-DRUNONCI=true", '-PjiraFieldName=Labels', "-DARTIFACTORYBASEURL=${urlStr}", '-DSNAPSHOTREPOKEY=snapshots', '-DRELEASEREPOKEY=releases', '-DARTIFACTORYUSERNAME=admin', '-DARTIFACTORYUSERPASSWD=admin123', "-DJIRABASEURL=${urlStr}", '-DJIRAUSERNAME=admin', '-DJIRAUSERPASSWD=admin123', '-Dhttp.proxyHost=localhost', '-Dhttp.proxyPort=8200')
-                .build()
-
-        boolean upLoadListCheck = true
-        upLoadList.each {
-            upLoadListCheck &= it.contains('releases/com/intershop/testproject/')
-        }
-
-        then:
-        result.output.contains('CREATE JAVADOC')
-        result.task(':artifactoryPublish').outcome == SUCCESS
-        result.task(':setIssueField').outcome == SUCCESS
-        upLoadListCheck
-        upLoadList.size() == 4
-        responses.get('onebody').contains('"project":{"key":"ISTOOLS"}')
-        responses.get('onebody').contains('"issuetype":{"id":"10001"}')
-
-        where:
-        buildFileContent << [mavenBuildFileContentBase]
-    }
 
     /**
      * Creates a java sub project
