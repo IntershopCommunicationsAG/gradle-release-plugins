@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+
+
 package com.intershop.gradle.artifactorypublish
 
 import com.intershop.gradle.buildinfo.BuildInfoExtension
 import com.intershop.gradle.buildinfo.BuildInfoPlugin
-import com.intershop.gradle.jiraconnector.JiraConnectorPlugin
 import com.intershop.gradle.repoconfig.RepoConfigRegistry
-import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.jfrog.gradle.plugin.artifactory.ArtifactoryPlugin
@@ -27,7 +27,7 @@ import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
 /**
  * This is the implementation of the plugin.
  */
-class ArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
+class SimpleArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
 
     // run on CI server
     public final static String RUNONCI_ENV = 'RUNONCI'
@@ -53,18 +53,6 @@ class ArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
 
     /** Repository Configuration - End **/
 
-    /** Jira configuration - start **/
-    public final static String JIRA_BASEURL_ENV = 'JIRABASEURL'
-    public final static String JIRA_BASEURL_PRJ = 'jiraBaseURL'
-
-    public final static String JIRA_USER_NAME_ENV = 'JIRAUSERNAME'
-    public final static String JIRA_USER_NAME_PRJ = 'jiraUserName'
-
-    public final static String JIRA_USER_PASSWORD_ENV = 'JIRAUSERPASSWD'
-    public final static String JIRA_USER_PASSWORD_PRJ = 'jiraUserPASSWD'
-
-    /** Jira configuration - End **/
-
     public void apply(Project project) {
         project.rootProject.plugins.apply(BuildInfoPlugin)
         project.rootProject.plugins.apply(ArtifactoryPlugin)
@@ -73,13 +61,7 @@ class ArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
         project.logger.info('Publishing Configuration: RunOnCI: {}', runOnCI.toBoolean())
 
         if (runOnCI.toBoolean()) {
-            project.logger.info('Intershop release publishing configuration for Artifactory will be applied to project {}', project.name)
-
-            if (!project.rootProject.tasks.findByName('changelog')) {
-                throw new GradleException('Please apply also "com.intershop.gradle.scmversion"')
-            }
-
-            String jiraFieldName = project.hasProperty('jiraFieldName') ? project.property('jiraFieldName') : 'Fix Version/s'
+            project.logger.info('Intershop simple release publishing configuration for Artifactory will be applied to project {}', project.name)
 
             String repoBaseURL = getVariable(project, REPO_BASEURL_ENV, REPO_BASEURL_PRJ, '')
             String repoUserLogin = getVariable(project, REPO_USER_NAME_ENV, REPO_USER_NAME_PRJ, '')
@@ -142,48 +124,6 @@ class ArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
 
                 project.rootProject.rootProject.afterEvaluate {
                     artifactoryPluginConvention.clientConfig.publisher.repoKey = project.version.toString().endsWith('-SNAPSHOT') ? repoSnapshotKey : repoReleaseKey
-                }
-            }
-
-            String jiraBaseURL = getVariable(project, JIRA_BASEURL_ENV, JIRA_BASEURL_PRJ, '')
-            String jiraUserLogin = getVariable(project, JIRA_USER_NAME_ENV, JIRA_USER_NAME_PRJ, '')
-            String jiraUserPassword = getVariable(project, JIRA_USER_PASSWORD_ENV, JIRA_USER_PASSWORD_PRJ, '')
-
-            if(jiraBaseURL && jiraUserLogin && jiraUserPassword) {
-                project.rootProject.plugins.apply(JiraConnectorPlugin)
-
-                project.rootProject.jiraConnector {
-                    linePattern = '3\\+.*'
-                    fieldName = jiraFieldName
-                    versionMessage = 'version created by build plugin'
-                    issueFile = project.rootProject.tasks.changelog.outputs.files.singleFile
-
-                    if (project.name.contains('_')) {
-                        fieldPattern = '[a-z1-9]*_(.*)'
-                    }
-                }
-
-                project.rootProject.tasks.setIssueField.dependsOn project.rootProject.tasks.changelog
-
-                project.getRootProject().afterEvaluate {
-                    project.jiraConnector.fieldValue = "${project.name}/${project.version}"
-
-                    if(! project.version.toString().endsWith('-SNAPSHOT') && project.rootProject.tasks.findByName('artifactoryPublish')) {
-                        project.rootProject.tasks.artifactoryPublish.dependsOn project.tasks.setIssueField
-                    }
-                }
-            }
-
-            project.rootProject.rootProject.afterEvaluate {
-                if(! project.version.toString().endsWith('-SNAPSHOT')) {
-                    // add javadoc to root project
-                    project.getRootProject().ext.releaseWithJavaDoc = 'true'
-                    // add javadoc to sub project
-                    project.getRootProject().getSubprojects().each { Project subp ->
-                        subp.ext.releaseWithJavaDoc = 'true'
-                    }
-                } else {
-                    System.setProperty('ENABLE_SNAPSHOTS', 'true')
                 }
             }
         }

@@ -24,9 +24,7 @@ import org.junit.Rule
 
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 
-class SingleProjectSpec extends AbstractIntegrationSpec {
-
-    static String issueKey = 'ISTOOLS-993'
+class SingleSimpleProjectSpec extends AbstractIntegrationSpec {
 
     @Rule
     public final MockWebServer server = new MockWebServer()
@@ -37,22 +35,6 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
         List<String> upLoadList = []
         Map<String,String> responses = [:]
 
-        File changelog = file('build/changelog/changelog.asciidoc')
-        changelog << """
-        = Change Log for 2.0.0
-
-        This list contains changes since version 1.0.0. +
-        Created: Sun Feb 21 17:11:48 CET 2016
-
-        [cols="5%,5%,90%", width="95%", options="header"]
-        |===
-        3+| ${issueKey} change on master (e6c62c43)
-        | | M |  gradle.properties
-        3+| remove unnecessary files (a2da48ad)
-        | | D | gradle/wrapper/gradle-wrapper.jar
-        | | D | gradle/wrapper/gradle-wrapper.properties
-        |===""".stripIndent()
-
         server.setDispatcher(TestDispatcher.getIntegrationDispatcher(responses, upLoadList))
 
         buildFile << """
@@ -61,7 +43,7 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
                 id 'ivy-publish'
                 id 'com.intershop.gradle.scmversion' version '1.3.0'
                 id 'com.intershop.gradle.buildinfo' version '2.0.0'
-                id 'com.intershop.gradle.artifactorypublish-configuration'
+                id 'com.intershop.gradle.simpleartifactorypublish-configuration'
             }
 
             group = 'com.intershop'
@@ -96,7 +78,7 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
 
         when:
         def result = getPreparedGradleRunner()
-                .withArguments('artifactoryPublish', '--exclude-task', 'changelog', '--stacktrace', '-i', "-DRUNONCI=true", '-PjiraFieldName=Labels', "-DARTIFACTORYBASEURL=${urlStr}", '-DSNAPSHOTREPOKEY=snapshots', '-DRELEASEREPOKEY=releases', '-DARTIFACTORYUSERNAME=admin', '-DARTIFACTORYUSERPASSWD=admin123', "-DJIRABASEURL=${urlStr}", '-DJIRAUSERNAME=admin', '-DJIRAUSERPASSWD=admin123')
+                .withArguments('artifactoryPublish', '--stacktrace', '-i', "-DRUNONCI=true", "-DARTIFACTORYBASEURL=${urlStr}", '-DSNAPSHOTREPOKEY=snapshots', '-DRELEASEREPOKEY=releases', '-DARTIFACTORYUSERNAME=admin', '-DARTIFACTORYUSERPASSWD=admin123')
                 .build()
 
         boolean upLoadListCheck = true
@@ -107,10 +89,7 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
         then:
         upLoadListCheck
         upLoadList.size() == 2
-        result.task(':setIssueField').outcome == SUCCESS
         result.task(':artifactoryPublish').outcome == SUCCESS
-        responses.get('onebody').contains('"project":{"key":"ISTOOLS"}')
-        responses.get('onebody').contains('"issuetype":{"id":"10001"}')
     }
 
     def 'test release publishing with artifactory and maven'() {
@@ -118,22 +97,6 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
         String urlStr = server.url('/').toString()
         List<String> upLoadList = []
         Map<String,String> responses = [:]
-
-        File changelog = file('build/changelog/changelog.asciidoc')
-        changelog << """
-        = Change Log for 2.0.0
-
-        This list contains changes since version 1.0.0. +
-        Created: Sun Feb 21 17:11:48 CET 2016
-
-        [cols="5%,5%,90%", width="95%", options="header"]
-        |===
-        3+| ${issueKey} change on master (e6c62c43)
-        | | M |  gradle.properties
-        3+| remove unnecessary files (a2da48ad)
-        | | D | gradle/wrapper/gradle-wrapper.jar
-        | | D | gradle/wrapper/gradle-wrapper.properties
-        |===""".stripIndent()
 
         server.setDispatcher(TestDispatcher.getIntegrationDispatcher(responses, upLoadList))
 
@@ -143,7 +106,7 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
                 id 'maven-publish'
                 id 'com.intershop.gradle.scmversion' version '1.3.0'
                 id 'com.intershop.gradle.buildinfo' version '2.0.0'
-                id 'com.intershop.gradle.artifactorypublish-configuration'
+                id 'com.intershop.gradle.simpleartifactorypublish-configuration'
             }
 
             group = 'com.intershop'
@@ -175,7 +138,7 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
 
         when:
         def result = getPreparedGradleRunner()
-                .withArguments('artifactoryPublish', '--exclude-task', 'changelog', '--stacktrace', '-i', "-DRUNONCI=true", '-PjiraFieldName=Labels', "-DARTIFACTORYBASEURL=${urlStr}", '-DSNAPSHOTREPOKEY=snapshots', '-DRELEASEREPOKEY=releases', '-DARTIFACTORYUSERNAME=admin', '-DARTIFACTORYUSERPASSWD=admin123', "-DJIRABASEURL=${urlStr}", '-DJIRAUSERNAME=admin', '-DJIRAUSERPASSWD=admin123')
+                .withArguments('artifactoryPublish', '--stacktrace', '-i', "-DRUNONCI=true", "-DARTIFACTORYBASEURL=${urlStr}", '-DSNAPSHOTREPOKEY=snapshots', '-DRELEASEREPOKEY=releases', '-DARTIFACTORYUSERNAME=admin', '-DARTIFACTORYUSERPASSWD=admin123')
                 .build()
 
         boolean upLoadListCheck = true
@@ -186,10 +149,7 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
         then:
         upLoadListCheck
         upLoadList.size() == 2
-        result.task(':setIssueField').outcome == SUCCESS
         result.task(':artifactoryPublish').outcome == SUCCESS
-        responses.get('onebody').contains('"project":{"key":"ISTOOLS"}')
-        responses.get('onebody').contains('"issuetype":{"id":"10001"}')
     }
 
 
@@ -199,22 +159,6 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
         List<String> upLoadList = []
         Map<String,String> responses = [:]
 
-        File changelog = file('build/changelog/changelog.asciidoc')
-        changelog << """
-        = Change Log for 2.0.0
-
-        This list contains changes since version 1.0.0. +
-        Created: Sun Feb 21 17:11:48 CET 2016
-
-        [cols="5%,5%,90%", width="95%", options="header"]
-        |===
-        3+| ${issueKey} change on master (e6c62c43)
-        | | M |  gradle.properties
-        3+| remove unnecessary files (a2da48ad)
-        | | D | gradle/wrapper/gradle-wrapper.jar
-        | | D | gradle/wrapper/gradle-wrapper.properties
-        |===""".stripIndent()
-
         server.setDispatcher(TestDispatcher.getIntegrationDispatcher(responses, upLoadList))
         buildFile << """
             plugins {
@@ -222,7 +166,7 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
                 id 'ivy-publish'
                 id 'com.intershop.gradle.scmversion' version '1.3.0'
                 id 'com.intershop.gradle.buildinfo' version '2.0.0'
-                id 'com.intershop.gradle.artifactorypublish-configuration'
+                id 'com.intershop.gradle.simpleartifactorypublish-configuration'
             }
 
             group = 'com.intershop'
@@ -257,7 +201,7 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
 
         when:
         def result = getPreparedGradleRunner()
-                .withArguments('artifactoryPublish', '--exclude-task', 'changelog', '--stacktrace', '-d', "-DRUNONCI=true", '-PjiraFieldName=Labels', "-DARTIFACTORYBASEURL=${urlStr}", '-DSNAPSHOTREPOKEY=snapshots', '-DRELEASEREPOKEY=releases', '-DARTIFACTORYUSERNAME=admin', '-DARTIFACTORYUSERPASSWD=admin123', "-DJIRABASEURL=${urlStr}", '-DJIRAUSERNAME=admin', '-DJIRAUSERPASSWD=admin123')
+                .withArguments('artifactoryPublish', '--stacktrace', '-d', "-DRUNONCI=true", "-DARTIFACTORYBASEURL=${urlStr}", '-DSNAPSHOTREPOKEY=snapshots', '-DRELEASEREPOKEY=releases', '-DARTIFACTORYUSERNAME=admin', '-DARTIFACTORYUSERPASSWD=admin123')
                 .build()
 
         boolean upLoadListCheck = true
@@ -269,7 +213,6 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
         upLoadListCheck
         upLoadList.size() == 2
         result.task(':artifactoryPublish').outcome == SUCCESS
-        ! result.tasks.contains(':writeToJira')
     }
 
 }

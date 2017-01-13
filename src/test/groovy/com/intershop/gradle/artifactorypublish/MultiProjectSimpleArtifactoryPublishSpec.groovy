@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+
+
 package com.intershop.gradle.artifactorypublish
 
 import com.intershop.gradle.test.AbstractIntegrationSpec
@@ -24,9 +26,7 @@ import spock.lang.Unroll
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 
 @Unroll
-class MultiProjectArtifactorySpec extends AbstractIntegrationSpec {
-
-    static String issueKey = 'ISTOOLS-993'
+class MultiProjectSimpleArtifactoryPublishSpec extends AbstractIntegrationSpec {
 
     String configURL = System.properties['configURL']
     String configToken = System.properties['configURLToken']
@@ -35,10 +35,6 @@ class MultiProjectArtifactorySpec extends AbstractIntegrationSpec {
                                           plugins {
                                                 id 'java'
                                                 id 'ivy-publish'
-                                            }
-
-                                            if(project.hasProperty("releaseWithJavaDoc") && project.ext.releaseWithJavaDoc.toBoolean()) {
-                                              println 'CREATE JAVADOC'
                                             }
 
                                             publishing {
@@ -55,11 +51,7 @@ class MultiProjectArtifactorySpec extends AbstractIntegrationSpec {
                                                 id 'java'
                                                 id 'maven-publish'
                                             }
-
-                                            if(project.hasProperty("releaseWithJavaDoc") && project.ext.releaseWithJavaDoc.toBoolean()) {
-                                              println 'CREATE JAVADOC'
-                                            }
-
+                                            
                                             publishing {
                                                 publications {
                                                     maven(MavenPublication) {
@@ -71,9 +63,6 @@ class MultiProjectArtifactorySpec extends AbstractIntegrationSpec {
 
     @Rule
     public final MockWebServer server = new MockWebServer()
-
-    @Rule
-    public final MockWebServer jiraServer = new MockWebServer()
 
     @Rule
     public final MockWebServer artifactoryServer = new MockWebServer()
@@ -91,7 +80,7 @@ class MultiProjectArtifactorySpec extends AbstractIntegrationSpec {
                   id "ivy-publish"
                   id 'com.intershop.gradle.scmversion' version '1.3.0'
                   id 'com.intershop.gradle.buildinfo' version '2.0.0'
-                  id 'com.intershop.gradle.artifactorypublish-configuration'
+                  id 'com.intershop.gradle.simpleartifactorypublish-configuration'
                 }
 
                 group = 'com.intershop.testproject'
@@ -123,25 +112,9 @@ class MultiProjectArtifactorySpec extends AbstractIntegrationSpec {
         createSubProjectJava('project1a', settingsfile, 'com.intereshop.a', buildFileContent, '1.0.0')
         createSubProjectJava('project2b', settingsfile, 'com.intereshop.b', buildFileContent, '1.0.0')
 
-        File changelog = file('build/changelog/changelog.asciidoc')
-        changelog << """
-        = Change Log for 2.0.0
-
-        This list contains changes since version 1.0.0. +
-        Created: Sun Feb 21 17:11:48 CET 2016
-
-        [cols="5%,5%,90%", width="95%", options="header"]
-        |===
-        3+| ${issueKey} change on master (e6c62c43)
-        | | M |  gradle.properties
-        3+| remove unnecessary files (a2da48ad)
-        | | D | gradle/wrapper/gradle-wrapper.jar
-        | | D | gradle/wrapper/gradle-wrapper.properties
-        |===""".stripIndent()
-
         when:
         def result = getPreparedGradleRunner()
-                .withArguments('artifactoryPublish', '--exclude-task', 'changelog', '--stacktrace', '-i', "-DRUNONCI=true", '-PjiraFieldName=Labels', "-DARTIFACTORYBASEURL=${urlStr}", '-DSNAPSHOTREPOKEY=snapshots', '-DRELEASEREPOKEY=releases', '-DARTIFACTORYUSERNAME=admin', '-DARTIFACTORYUSERPASSWD=admin123', "-DJIRABASEURL=${urlStr}", '-DJIRAUSERNAME=admin', '-DJIRAUSERPASSWD=admin123')
+                .withArguments('artifactoryPublish', '--exclude-task', 'changelog', '--stacktrace', '-i', "-DRUNONCI=true", "-DARTIFACTORYBASEURL=${urlStr}", '-DSNAPSHOTREPOKEY=snapshots', '-DRELEASEREPOKEY=releases', '-DARTIFACTORYUSERNAME=admin', '-DARTIFACTORYUSERPASSWD=admin123')
                 .build()
 
         boolean upLoadListCheck = true
@@ -150,13 +123,9 @@ class MultiProjectArtifactorySpec extends AbstractIntegrationSpec {
         }
 
         then:
-        result.output.contains('CREATE JAVADOC')
         result.task(':artifactoryPublish').outcome == SUCCESS
-        result.task(':setIssueField').outcome == SUCCESS
         upLoadListCheck
         upLoadList.size() == 4
-        responses.get('onebody').contains('"project":{"key":"ISTOOLS"}')
-        responses.get('onebody').contains('"issuetype":{"id":"10001"}')
 
         where:
         buildFileContent << [buildFileContentBase]
@@ -164,13 +133,11 @@ class MultiProjectArtifactorySpec extends AbstractIntegrationSpec {
 
     def 'test release publishing with artifactory and maven'() {
         given:
-        String jiraUrlStr = jiraServer.url('/').toString()
         String artifactoryStr = artifactoryServer.url('/').toString()
 
         List<String> upLoadList = []
         Map<String,String> responses = [:]
 
-        jiraServer.setDispatcher(TestDispatcher.getIntegrationDispatcher(responses, upLoadList))
         artifactoryServer.setDispatcher(TestDispatcher.getIntegrationDispatcher(responses, upLoadList))
 
         buildFile << """
@@ -178,7 +145,7 @@ class MultiProjectArtifactorySpec extends AbstractIntegrationSpec {
                   id "maven-publish"
                   id 'com.intershop.gradle.scmversion' version '1.3.0'
                   id 'com.intershop.gradle.buildinfo' version '2.0.0'
-                  id 'com.intershop.gradle.artifactorypublish-configuration'
+                  id 'com.intershop.gradle.simpleartifactorypublish-configuration'
                 }
 
                 group = 'com.intershop.testproject'
@@ -206,25 +173,9 @@ class MultiProjectArtifactorySpec extends AbstractIntegrationSpec {
         createSubProjectJava('project1a', settingsfile, 'com.intereshop.a', buildFileContent, '1.0.0')
         createSubProjectJava('project2b', settingsfile, 'com.intereshop.b', buildFileContent, '1.0.0')
 
-        File changelog = file('build/changelog/changelog.asciidoc')
-        changelog << """
-        = Change Log for 2.0.0
-
-        This list contains changes since version 1.0.0. +
-        Created: Sun Feb 21 17:11:48 CET 2016
-
-        [cols="5%,5%,90%", width="95%", options="header"]
-        |===
-        3+| ${issueKey} change on master (e6c62c43)
-        | | M |  gradle.properties
-        3+| remove unnecessary files (a2da48ad)
-        | | D | gradle/wrapper/gradle-wrapper.jar
-        | | D | gradle/wrapper/gradle-wrapper.properties
-        |===""".stripIndent()
-
         when:
         def result = getPreparedGradleRunner()
-                .withArguments('artifactoryPublish', '--exclude-task', 'changelog', '--stacktrace', '-i', "-DRUNONCI=true", '-PjiraFieldName=Labels', "-DARTIFACTORYBASEURL=${artifactoryStr}", '-DSNAPSHOTREPOKEY=snapshots', '-DRELEASEREPOKEY=releases', '-DARTIFACTORYUSERNAME=admin', '-DARTIFACTORYUSERPASSWD=admin123', "-DJIRABASEURL=${jiraUrlStr}", '-DJIRAUSERNAME=admin', '-DJIRAUSERPASSWD=admin123', '-Dhttp.proxyHost=localhost', '-Dhttp.proxyPort=8200')
+                .withArguments('artifactoryPublish', '--stacktrace', '-i', "-DRUNONCI=true", "-DARTIFACTORYBASEURL=${artifactoryStr}", '-DSNAPSHOTREPOKEY=snapshots', '-DRELEASEREPOKEY=releases', '-DARTIFACTORYUSERNAME=admin', '-DARTIFACTORYUSERPASSWD=admin123')
                 .build()
 
         boolean upLoadListCheck = true
@@ -233,13 +184,9 @@ class MultiProjectArtifactorySpec extends AbstractIntegrationSpec {
         }
 
         then:
-        result.output.contains('CREATE JAVADOC')
         result.task(':artifactoryPublish').outcome == SUCCESS
-        result.task(':setIssueField').outcome == SUCCESS
         upLoadListCheck
         upLoadList.size() == 4
-        responses.get('onebody').contains('"project":{"key":"ISTOOLS"}')
-        responses.get('onebody').contains('"issuetype":{"id":"10001"}')
 
         where:
         buildFileContent << [mavenBuildFileContentBase]
@@ -258,7 +205,7 @@ class MultiProjectArtifactorySpec extends AbstractIntegrationSpec {
                   id "ivy-publish"
                   id 'com.intershop.gradle.scmversion' version '1.3.0'
                   id 'com.intershop.gradle.buildinfo' version '2.0.0'
-                  id 'com.intershop.gradle.artifactorypublish-configuration'
+                  id 'com.intershop.gradle.simpleartifactorypublish-configuration'
                 }
 
                 group = 'com.intershop.testproject'
@@ -289,22 +236,6 @@ class MultiProjectArtifactorySpec extends AbstractIntegrationSpec {
         createSubProjectJava('project1a', settingsfile, 'com.intereshop.a', buildFileContent, '1.0.0')
         createSubProjectJava('project2b', settingsfile, 'com.intereshop.b', buildFileContent, '1.0.0')
 
-        File changelog = file('build/changelog/changelog.asciidoc')
-        changelog << """
-        = Change Log for 2.0.0
-
-        This list contains changes since version 1.0.0. +
-        Created: Sun Feb 21 17:11:48 CET 2016
-
-        [cols="5%,5%,90%", width="95%", options="header"]
-        |===
-        3+| ${issueKey} change on master (e6c62c43)
-        | | M |  gradle.properties
-        3+| remove unnecessary files (a2da48ad)
-        | | D | gradle/wrapper/gradle-wrapper.jar
-        | | D | gradle/wrapper/gradle-wrapper.properties
-        |===""".stripIndent()
-
         when:
         def result = getPreparedGradleRunner()
                 .withArguments('publish', '--stacktrace', '-i')
@@ -316,8 +247,6 @@ class MultiProjectArtifactorySpec extends AbstractIntegrationSpec {
         }
 
         then:
-        ! result.output.contains('CREATE JAVADOC')
-        ! result.tasks.contains(':setIssueField')
         ! result.tasks.contains(':artifactoryPublish')
         upLoadListCheck
         upLoadList.size() == 0
@@ -339,7 +268,7 @@ class MultiProjectArtifactorySpec extends AbstractIntegrationSpec {
                   id "ivy-publish"
                   id 'com.intershop.gradle.scmversion' version '1.3.0'
                   id 'com.intershop.gradle.buildinfo' version '2.0.0'
-                  id 'com.intershop.gradle.artifactorypublish-configuration'
+                  id 'com.intershop.gradle.simpleartifactorypublish-configuration'
                 }
 
                 group = 'com.intershop.testproject'
@@ -370,25 +299,9 @@ class MultiProjectArtifactorySpec extends AbstractIntegrationSpec {
         createSubProjectJava('project1a', settingsfile, 'com.intereshop.a', buildFileContent, '1.0.0-SNAPSHOT')
         createSubProjectJava('project2b', settingsfile, 'com.intereshop.b', buildFileContent, '1.0.0-SNAPSHOT')
 
-        File changelog = file('project1a/build/changelog/changelog.asciidoc')
-        changelog << """
-        = Change Log for 2.0.0
-
-        This list contains changes since version 1.0.0. +
-        Created: Sun Feb 21 17:11:48 CET 2016
-
-        [cols="5%,5%,90%", width="95%", options="header"]
-        |===
-        3+| ${issueKey} change on master (e6c62c43)
-        | | M |  gradle.properties
-        3+| remove unnecessary files (a2da48ad)
-        | | D | gradle/wrapper/gradle-wrapper.jar
-        | | D | gradle/wrapper/gradle-wrapper.properties
-        |===""".stripIndent()
-
         when:
         def result = getPreparedGradleRunner()
-                .withArguments('artifactoryPublish', '--exclude-task', 'changelog', '--stacktrace', '-i', "-DRUNONCI=true", '-PjiraFieldName=Labels', "-DARTIFACTORYBASEURL=${urlStr}", '-DSNAPSHOTREPOKEY=snapshots', '-DRELEASEREPOKEY=releases', '-DARTIFACTORYUSERNAME=admin', '-DARTIFACTORYUSERPASSWD=admin123', "-DJIRABASEURL=${urlStr}", '-DJIRAUSERNAME=admin', '-DJIRAUSERPASSWD=admin123', '-Dhttp.proxyHost=localhost', '-Dhttp.proxyPort=8200')
+                .withArguments('artifactoryPublish', '--stacktrace', '-i', "-DRUNONCI=true", '-PjiraFieldName=Labels', "-DARTIFACTORYBASEURL=${urlStr}", '-DSNAPSHOTREPOKEY=snapshots', '-DRELEASEREPOKEY=releases', '-DARTIFACTORYUSERNAME=admin', '-DARTIFACTORYUSERPASSWD=admin123')
                 .build()
 
         boolean upLoadListCheck = true
@@ -401,7 +314,6 @@ class MultiProjectArtifactorySpec extends AbstractIntegrationSpec {
         result.task(':artifactoryPublish').outcome == SUCCESS
         upLoadListCheck
         upLoadList.size() == 4
-        ! result.tasks.contains(':writeToJira')
         upLoadListCheck
 
         where:

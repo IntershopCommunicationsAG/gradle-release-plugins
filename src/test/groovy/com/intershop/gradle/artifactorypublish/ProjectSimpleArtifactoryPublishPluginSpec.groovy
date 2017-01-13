@@ -20,10 +20,10 @@ package com.intershop.gradle.artifactorypublish
 import com.intershop.gradle.test.AbstractProjectSpec
 import org.gradle.api.Plugin
 
-class ProjectArtifactoryPublishPluginSpec extends AbstractProjectSpec  {
+class ProjectSimpleArtifactoryPublishPluginSpec extends AbstractProjectSpec  {
 
     @Override
     Plugin getPlugin() {
-        return new ArtifactoryPublishConfigurationPlugin()
+        return new SimpleArtifactoryPublishConfigurationPlugin()
     }
 }
