@@ -222,9 +222,9 @@ pluginBundle {
 
 dependencies {
     compile 'com.intershop.gradle.nexusstaging:nexusstaging-gradle-plugin:2.2.0'
-    compile 'com.intershop.gradle.jiraconnector:jiraconnector-gradle-plugin:2.4.0'
+    compile 'com.intershop.gradle.jiraconnector:jiraconnector-gradle-plugin:2.4.3'
     compile 'com.intershop.gradle.repoconfig:repoconfig-gradle-plugin:3.1.0'
-    compile 'org.jfrog.buildinfo:build-info-extractor-gradle:4.4.9'
+    compile 'org.jfrog.buildinfo:build-info-extractor-gradle:4.4.13'
     compile 'com.intershop.gradle.buildinfo:buildinfo-gradle-plugin:2.2.0'
 
     testCompile('org.spockframework:spock-core:1.0-groovy-2.4'){
