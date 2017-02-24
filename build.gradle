@@ -18,10 +18,10 @@ plugins {
     id 'maven-publish'
 
     // intershop version plugin
-    id 'com.intershop.gradle.scmversion' version '2.3.0'
+    id 'com.intershop.gradle.scmversion' version '2.3.4'
 
     // plugin for publishing to Gradle Portal
-    id 'com.gradle.plugin-publish' version '0.9.6'
+    id 'com.gradle.plugin-publish' version '0.9.7'
 
     // plugin for publishing to jcenter
     id 'com.jfrog.bintray' version '1.7.3'
@@ -49,7 +49,7 @@ if (project.version.endsWith('-SNAPSHOT')) {
 
 test {
     // Gradle versions for test
-    systemProperty 'intershop.gradle.versions', '2.11,3.1,3.2'
+    systemProperty 'intershop.gradle.versions', '2.11,3.4'
 }
 
 task copyAsciiDoc {
@@ -223,9 +223,9 @@ pluginBundle {
 dependencies {
     compile 'com.intershop.gradle.nexusstaging:nexusstaging-gradle-plugin:2.2.0'
     compile 'com.intershop.gradle.jiraconnector:jiraconnector-gradle-plugin:2.4.3'
-    compile 'com.intershop.gradle.repoconfig:repoconfig-gradle-plugin:3.1.0'
+    compile 'com.intershop.gradle.repoconfig:repoconfig-gradle-plugin:3.2.0'
     compile 'org.jfrog.buildinfo:build-info-extractor-gradle:4.4.13'
-    compile 'com.intershop.gradle.buildinfo:buildinfo-gradle-plugin:2.2.0'
+    compile 'com.intershop.gradle.buildinfo:buildinfo-gradle-plugin:2.3.1'
 
     testCompile('org.spockframework:spock-core:1.0-groovy-2.4'){
         exclude group: 'org.codehaus.groovy'
