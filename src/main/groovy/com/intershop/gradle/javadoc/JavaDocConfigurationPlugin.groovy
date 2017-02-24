@@ -17,11 +17,9 @@ package com.intershop.gradle.javadoc
 
 import groovy.transform.Memoized
 import groovy.transform.TypeChecked
-
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.javadoc.Javadoc
-
 /**
  * This is the implementation of the plugin.
  */
@@ -31,19 +29,28 @@ class JavaDocConfigurationPlugin implements Plugin<Project> {
 
     void apply(Project project) {
         this.project = project
-        project.tasks.withType(Javadoc) { task ->
-            task.doFirst {
-                project.copy {
-                    from styleSheet
-                    into(new File(project.buildDir, 'javadoctmp'))
-                    fileMode = 0666
+
+        if(! project.tasks.findByName('copyJavaDocStylesheet')) {
+            project.tasks.create('copyJavaDocStylesheet') {
+                outputs.file new File(project.buildDir, 'javadoctmp/intershop.css')
+
+                doLast {
+                    project.copy {
+                        from getStyleSheet()
+                        into new File(project.buildDir, 'javadoctmp')
+                        fileMode = 0666
+                    }
                 }
             }
+        }
+
+        project.tasks.withType(Javadoc) { task ->
+            task.dependsOn project.tasks.copyJavaDocStylesheet
             task.options {
                 header = '<img src="{@docRoot}/images/intershop_logo.gif">'
                 footer = '<img src="{@docRoot}/images/intershop_logo.gif">'
 
-                stylesheetFile = new File(project.buildDir, 'javadoctmp/intershop.css')
+                stylesheetFile = project.tasks.copyJavaDocStylesheet.outputs.files.singleFile
 
                 def javaVersion = System.getProperty('java.version')
                 if(javaVersion.startsWith('1.8')) {
