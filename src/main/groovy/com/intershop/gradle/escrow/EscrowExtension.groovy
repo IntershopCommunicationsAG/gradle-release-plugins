@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
-
 package com.intershop.gradle.escrow
 
 import groovy.util.logging.Slf4j
 import org.gradle.api.Project
+
+import static com.intershop.gradle.util.PluginHelper.*
 
 @Slf4j
 class EscrowExtension {
@@ -27,11 +27,6 @@ class EscrowExtension {
 
     public static final String ESCROW_EXTENSION_NAME = 'escrow'
     public static final String ESCROW_TASK_NAME = 'escrowZip'
-
-    // run on CI server
-    public final static String RUNONCI_ENV = 'RUNONCI'
-    public final static String RUNONCI_PRJ = 'runOnCI'
-
 
     public static final String ESCROW_GROUP_NAME = 'Escrow Build Group'
 
@@ -42,7 +37,7 @@ class EscrowExtension {
 
         // init default value for runOnCI
         if(! runOnCI) {
-            runOnCI = Boolean.parseBoolean(getVariable(RUNONCI_ENV, RUNONCI_PRJ, 'false'))
+            runOnCI = Boolean.parseBoolean(getVariable(project, RUNONCI_ENV, RUNONCI_PRJ, 'false'))
             if(runOnCI) {
                 log.warn('Escrow task will be executed on a CI build environment for {}.', project.name)
             }
@@ -94,27 +89,4 @@ class EscrowExtension {
      * java environment RUNONCI or project variable runOnCI</p>
      */
     boolean runOnCI
-
-    /**
-     * Calculates the setting for special configuration from the system
-     * or java environment or project properties.
-     *
-     * @param envVar        name of environment variable
-     * @param projectVar    name of project variable
-     * @param defaultValue  default value
-     * @return              the string configuration
-     */
-    private String getVariable(String envVar, String projectVar, String defaultValue) {
-        if(System.properties[envVar]) {
-            log.debug('Specified from system property {}.', envVar)
-            return System.properties[envVar].toString().trim()
-        } else if(System.getenv(envVar)) {
-            log.debug('Specified from system environment property {}.', envVar)
-            return System.getenv(envVar).toString().trim()
-        } else if(project.hasProperty(projectVar) && project."${projectVar}") {
-            log.debug('Specified from project property {}.', projectVar)
-            return project."${projectVar}".toString().trim()
-        }
-        return defaultValue
-    }
 }

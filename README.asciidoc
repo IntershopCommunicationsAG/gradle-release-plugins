@@ -1,5 +1,5 @@
 = Gradle Release Plugins for Intershop
-:latestRevision: 3.2.0
+:latestRevision: 3.4.3
 
 == Summary
 This collection of plugins adds special release functionality and encapsulates specific configurations and task dependencies.
@@ -75,6 +75,28 @@ plugins {
 
 It must be applied to each subproject of a multi project.
 It changes the image and the used ccs of generated Javadoc files.
+
+== Java Source Plugin
+This plugin add a source package to all publications if the JavaBasePlugin is applied to the project.
+
+==== Usage
+To use the Gradle java source plugin. include the following in your build script:
+
+[source,groovy,subs="attributes"]
+----
+plugins {
+   id 'com.intershop.gradle.javasource-plugin' version '{latestRevision}'
+}
+----
+
+The source package will be only created and published if the property `runOnCI` is true.
+
+[cols="17%,17%,65%", width="95%", options="header"]
+|===
+| System variable or Java system property | Project property  | Description
+
+| *RUNONCI*          | *runOnCI*         | This configuration must be true, if the project is used on a CI server.
+|===
 
 == Simple Publish Configuration Plugin
 
