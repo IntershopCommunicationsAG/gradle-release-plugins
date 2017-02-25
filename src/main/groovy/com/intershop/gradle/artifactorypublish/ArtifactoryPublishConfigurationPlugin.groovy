@@ -24,14 +24,13 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.jfrog.gradle.plugin.artifactory.ArtifactoryPlugin
 import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
+
+import static com.intershop.gradle.util.PluginHelper.*
+
 /**
  * This is the implementation of the plugin.
  */
 class ArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
-
-    // run on CI server
-    public final static String RUNONCI_ENV = 'RUNONCI'
-    public final static String RUNONCI_PRJ = 'runOnCI'
 
     // Repo SNAPSHOT Path (based on Nexus Base URL configuration)
     public final static String SNAPSHOT_KEY_ENV = 'SNAPSHOTREPOKEY'
@@ -187,28 +186,5 @@ class ArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
                 }
             }
         }
-    }
-
-    /**
-     * Calculates the setting for special configuration from the system
-     * or java environment or project properties.
-     *
-     * @param envVar        name of environment variable
-     * @param projectVar    name of project variable
-     * @param defaultValue  default value
-     * @return              the string configuration
-     */
-    private String getVariable(Project project, String envVar, String projectVar, String defaultValue) {
-        if(System.properties[envVar]) {
-            project.logger.debug('Specified from system property {}.', envVar)
-            return System.properties[envVar].toString().trim()
-        } else if(System.getenv(envVar)) {
-            project.logger.debug('Specified from system environment property {}.', envVar)
-            return System.getenv(envVar).toString().trim()
-        } else if(project.hasProperty(projectVar) && project."${projectVar}") {
-            project.logger.debug('Specified from project property {}.', projectVar)
-            return project."${projectVar}".toString().trim()
-        }
-        return defaultValue
     }
 }
