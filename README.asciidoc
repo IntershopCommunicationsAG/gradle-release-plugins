@@ -1,5 +1,5 @@
 = Gradle Release Plugins for Intershop
-:latestRevision: 3.4.3
+:latestRevision: 3.4.4
 
 == Summary
 This collection of plugins adds special release functionality and encapsulates specific configurations and task dependencies.
