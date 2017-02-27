@@ -205,6 +205,10 @@ pluginBundle {
             id = 'com.intershop.gradle.javadoc-configuration'
             displayName = 'Plugin with Intershop specific javadoc configuration'
         }
+        javasourcePlugin {
+            id = 'com.intershop.gradle.javasource-plugin'
+            displayName = 'Plugin with Intershop specific javasource package configuration'
+        }
         nexuspublishPlugin {
             id = 'com.intershop.gradle.nexuspublish-configuration'
             displayName = 'Plugin with specific publishing configuration'
@@ -216,6 +220,10 @@ pluginBundle {
         artifactorypublishPlugin {
             id = 'com.intershop.gradle.artifactorypublish-configuration'
             displayName = 'Plugin with Intershop specific publishing configuration with Artifactory'
+        }
+        simpleartifactorypublishPlugin {
+            id = 'com.intershop.gradle.simpleartifactorypublish-configuration'
+            displayName = 'Plugin with Intershop specific simple publishing configuration with Artifactory'
         }
     }
 }
