@@ -32,25 +32,26 @@ class JavaDocConfigurationPlugin implements Plugin<Project> {
 
         if(! project.tasks.findByName('copyJavaDocStylesheet')) {
             project.tasks.create('copyJavaDocStylesheet') {
-                outputs.file new File(project.buildDir, 'javadoctmp/intershop.css')
+                outputs.file new File(project.getBuildDir(), 'javadoctmp/intershop.css')
 
                 doLast {
                     project.copy {
                         from getStyleSheet()
-                        into new File(project.buildDir, 'javadoctmp')
+                        into new File(project.getBuildDir(), 'javadoctmp')
                         fileMode = 0666
                     }
                 }
             }
         }
 
+        project.afterEvaluate {
         project.tasks.withType(Javadoc) { task ->
             task.dependsOn project.tasks.copyJavaDocStylesheet
             task.options {
                 header = '<img src="{@docRoot}/images/intershop_logo.gif">'
                 footer = '<img src="{@docRoot}/images/intershop_logo.gif">'
 
-                stylesheetFile = project.tasks.copyJavaDocStylesheet.outputs.files.singleFile
+                stylesheetFile = new File(project.getBuildDir(), 'javadoctmp/intershop.css')
 
                 def javaVersion = System.getProperty('java.version')
                 if(javaVersion.startsWith('1.8')) {
@@ -69,6 +70,7 @@ class JavaDocConfigurationPlugin implements Plugin<Project> {
                     into(new File(task.destinationDir, 'images'))
                     fileMode = 0666
                 }
+            }
             }
         }
     }
