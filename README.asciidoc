@@ -1,5 +1,5 @@
 = Gradle Release Plugins for Intershop
-:latestRevision: 3.4.4
+:latestRevision: 3.5.0
 
 == Summary
 This collection of plugins adds special release functionality and encapsulates specific configurations and task dependencies.
@@ -247,6 +247,9 @@ It requires, that the https://github.com/IntershopCommunicationsAG/scmversion-gr
 The configuration and the execution of tasks depends on the version number.
 The editing of Jira issues will be executed only for release versions without a "SNAPSHOT" extension.
 Furthermore the snapshot repository key is used if the version is a snapshot version.
+
+NOTE: *The behaviour of the plugin is changed with version 3.5.* A task 'releaseLog' is added by this plugin to project tasks. This task starts the creation of a
+change log and sends the version of the build to Jira, if the project version does not end with snapshot. Otherwise the task has not function and is always 'up to date'.
 
 === Usage
 To use the Artifactory publish configuration plugin, include the following in your build script:

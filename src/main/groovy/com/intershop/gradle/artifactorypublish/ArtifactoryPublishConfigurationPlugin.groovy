@@ -22,6 +22,7 @@ import com.intershop.gradle.repoconfig.RepoConfigRegistry
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.jfrog.gradle.plugin.artifactory.ArtifactoryPlugin
 import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
 
@@ -164,11 +165,15 @@ class ArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
 
                 project.rootProject.tasks.setIssueField.dependsOn project.rootProject.tasks.changelog
 
+                // run change log creation with a separate call ...
+                Task releaseLog = project.rootProject.tasks.maybeCreate('releaseLog')
+
                 project.getRootProject().afterEvaluate {
                     project.jiraConnector.fieldValue = "${project.name}/${project.version}"
 
-                    if(! project.version.toString().endsWith('-SNAPSHOT') && project.rootProject.tasks.findByName('artifactoryPublish')) {
-                        project.rootProject.tasks.artifactoryPublish.dependsOn project.tasks.setIssueField
+                    //... only if the version does not end with SNAPSHOT
+                    if(! project.version.toString().endsWith('-SNAPSHOT')) {
+                        project.rootProject.tasks.releaseLog.dependsOn project.tasks.setIssueField
                     }
                 }
             }
