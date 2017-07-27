@@ -30,39 +30,22 @@ class JavaDocConfigurationPlugin implements Plugin<Project> {
     void apply(Project project) {
         this.project = project
 
-        if(! project.tasks.findByName('copyJavaDocStylesheet')) {
-            project.tasks.create('copyJavaDocStylesheet') {
-                outputs.file new File(project.getBuildDir(), 'javadoctmp/intershop.css')
-
-                doLast {
-                    project.copy {
-                        from getStyleSheet()
-                        into new File(project.getBuildDir(), 'javadoctmp')
-                        fileMode = 0666
-                    }
-                }
-            }
-        }
-
-        project.afterEvaluate {
         project.tasks.withType(Javadoc) { task ->
-            task.dependsOn project.tasks.copyJavaDocStylesheet
-            task.options {
-                header = '<img src="{@docRoot}/images/intershop_logo.gif">'
-                footer = '<img src="{@docRoot}/images/intershop_logo.gif">'
 
-                stylesheetFile = new File(project.getBuildDir(), 'javadoctmp/intershop.css')
+                task.options {
+                    header = '<img src="{@docRoot}/images/intershop_logo.gif">'
+                    footer = '<img src="{@docRoot}/images/intershop_logo.gif">'
 
-                def javaVersion = System.getProperty('java.version')
-                if(javaVersion.startsWith('1.8')) {
-                    // This will disable doclint. doclint comes with JDK 1.8.
-                    // doclint requires valid HTML 4.01 in JavaDoc
-                    // invalid Javadoc will break the build!
-                    addStringOption('Xdoclint:none', '-quiet')
+                    def javaVersion = System.getProperty('java.version')
+                    if (javaVersion.startsWith('1.8')) {
+                        // This will disable doclint. doclint comes with JDK 1.8.
+                        // doclint requires valid HTML 4.01 in JavaDoc
+                        // invalid Javadoc will break the build!
+                        addStringOption('Xdoclint:none', '-quiet')
+                    }
+
+                    links("http://docs.oracle.com/javase/8/docs/api/")
                 }
-
-                links("http://docs.oracle.com/javase/8/docs/api/")
-            }
 
             task.doLast {
                 project.copy {
@@ -71,12 +54,7 @@ class JavaDocConfigurationPlugin implements Plugin<Project> {
                     fileMode = 0666
                 }
             }
-            }
         }
-    }
-
-    File getStyleSheet() {
-        copyResource('/intershop/javadoc/intershop.css')
     }
 
     File getLogo() {

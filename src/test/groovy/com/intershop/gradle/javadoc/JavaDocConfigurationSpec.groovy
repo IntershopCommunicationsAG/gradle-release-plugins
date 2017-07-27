@@ -71,19 +71,14 @@ class JavaDocConfigurationSpec extends AbstractIntegrationSpec {
         then:
         fConstantValues.exists()
         fConstantValues.getText().contains('images/intershop_logo.gif')
-        fConstantValues.getText().contains('intershop.css')
         fDeprecatedList.exists()
         fDeprecatedList.getText().contains('images/intershop_logo.gif')
-        fDeprecatedList.getText().contains('intershop.css')
         fHelpDoc.exists()
         fHelpDoc.getText().contains('images/intershop_logo.gif')
-        fHelpDoc.getText().contains('intershop.css')
         fIndexAll.exists()
         fIndexAll.getText().contains('images/intershop_logo.gif')
-        fIndexAll.getText().contains('intershop.css')
         fOverviewTree.exists()
         fOverviewTree.getText().contains('images/intershop_logo.gif')
-        fOverviewTree.getText().contains('intershop.css')
 
         where:
         gradleVersion << supportedGradleVersions
@@ -141,19 +136,14 @@ class JavaDocConfigurationSpec extends AbstractIntegrationSpec {
         then:
         fConstantValues.exists()
         fConstantValues.getText().contains('images/intershop_logo.gif')
-        fConstantValues.getText().contains('intershop.css')
         fDeprecatedList.exists()
         fDeprecatedList.getText().contains('images/intershop_logo.gif')
-        fDeprecatedList.getText().contains('intershop.css')
         fHelpDoc.exists()
         fHelpDoc.getText().contains('images/intershop_logo.gif')
-        fHelpDoc.getText().contains('intershop.css')
         fIndexAll.exists()
         fIndexAll.getText().contains('images/intershop_logo.gif')
-        fIndexAll.getText().contains('intershop.css')
         fOverviewTree.exists()
         fOverviewTree.getText().contains('images/intershop_logo.gif')
-        fOverviewTree.getText().contains('intershop.css')
 
         where:
         gradleVersion << supportedGradleVersions
