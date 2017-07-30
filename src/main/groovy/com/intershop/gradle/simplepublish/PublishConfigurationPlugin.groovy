@@ -75,23 +75,23 @@ class PublishConfigurationPlugin  implements Plugin<Project> {
 
             String snapshotRelease = getVariable(project, SNAPSHOT_RELEASE_ENV, SNAPSHOT_RELEASE_PRJ, 'false')
 
-            if(repoSnapshotURL) {
+            if(repoSnapshotURL != '') {
                 if(project == project.rootProject) {
-                    project.subprojects.each {
-                        applySnapshotPublishing(it, repoSnapshotURL, repoUserLogin, repoUserPassword, snapshotRelease.toLowerCase() == 'true')
-                    }
-                } else {
-                    applySnapshotPublishing(project, repoSnapshotURL, repoUserLogin, repoUserPassword, snapshotRelease.toLowerCase() == 'true')
+                        project.subprojects.each {
+                            println it.getName()
+                            applySnapshotPublishing(it, repoSnapshotURL, repoUserLogin, repoUserPassword, snapshotRelease.toLowerCase() == 'true')
+                        }
+
                 }
+                applySnapshotPublishing(project, repoSnapshotURL, repoUserLogin, repoUserPassword, snapshotRelease.toLowerCase() == 'true')
             }
             if(repoReleaseURL) {
                 if(project == project.rootProject) {
                     project.subprojects.each {
                         applyReleasePublishing(it, repoReleaseURL, repoUserLogin, repoUserPassword)
                     }
-                } else {
-                    applyReleasePublishing(project, repoReleaseURL, repoUserLogin, repoUserPassword)
                 }
+                applyReleasePublishing(project, repoReleaseURL, repoUserLogin, repoUserPassword)
             }
 
             project.rootProject.afterEvaluate {
