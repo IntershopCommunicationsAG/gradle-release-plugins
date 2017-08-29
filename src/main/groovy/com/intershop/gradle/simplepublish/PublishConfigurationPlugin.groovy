@@ -78,7 +78,6 @@ class PublishConfigurationPlugin  implements Plugin<Project> {
             if(repoSnapshotURL != '') {
                 if(project == project.rootProject) {
                         project.subprojects.each {
-                            println it.getName()
                             applySnapshotPublishing(it, repoSnapshotURL, repoUserLogin, repoUserPassword, snapshotRelease.toLowerCase() == 'true')
                         }
 

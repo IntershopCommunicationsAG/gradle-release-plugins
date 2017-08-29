@@ -135,6 +135,9 @@ class ArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
                     clientConfig.publisher.addMatrixParam('scm.type', infoExtension?.scmProvider.SCMType?:'unknown')
                     clientConfig.publisher.addMatrixParam('scm.branch.name', infoExtension?.scmProvider.branchName?:'unknown')
                     clientConfig.publisher.addMatrixParam('scm.change.time', infoExtension?.scmProvider.lastChangeTime?:'unknown')
+
+                    clientConfig.publisher.addMatrixParam('project.version', infoExtension?.infoProvider.projectVersion)
+                    clientConfig.publisher.addMatrixParam('project.name', infoExtension?.infoProvider.rootProject)
                 }
                 project.rootProject.allprojects {
                     it.plugins.apply(ArtifactoryPlugin)
