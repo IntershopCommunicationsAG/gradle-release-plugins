@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Intershop Communications AG.
+ * Copyright 2017 Intershop Communications AG.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.intershop.gradle.artifactorypublish
 import com.intershop.gradle.buildinfo.BuildInfoExtension
 import com.intershop.gradle.buildinfo.BuildInfoPlugin
 import com.intershop.gradle.repoconfig.RepoConfigRegistry
+import groovy.transform.CompileDynamic
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.jfrog.gradle.plugin.artifactory.ArtifactoryPlugin
@@ -25,19 +26,20 @@ import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
 
 import static com.intershop.gradle.util.PluginHelper.*
 /**
- * This is the implementation of the plugin.
+ * This plugin adds a configuration for an publishing with artifactory only.
  */
+@CompileDynamic
 class SimpleArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
 
-    // Repo SNAPSHOT Path (based on Nexus Base URL configuration)
+    // Repo SNAPSHOT Path (based on Artifactory Base URL configuration)
     public final static String SNAPSHOT_KEY_ENV = 'SNAPSHOTREPOKEY'
     public final static String SNAPSHOT_KEY_PRJ = 'snapshotRepoKey'
 
-    // Repo RELEASE Path (based on Nexus Base URL configuration)
+    // Repo RELEASE Path (based on Artifactory Base URL configuration)
     public final static String RELEASE_KEY_ENV = 'RELEASEREPOKEY'
     public final static String RELEASE_KEY_PRJ = 'releaseRepoKey'
 
-    // dublicated from nexusstaging-gradle-plugin
+    // dublicated from artifactory-gradle-plugin
     public final static String REPO_BASEURL_ENV = 'ARTIFACTORYBASEURL'
     public final static String REPO_BASEURL_PRJ = 'artifactoryBaseURL'
 
@@ -49,16 +51,20 @@ class SimpleArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
 
     /** Repository Configuration - End **/
 
-    public void apply(Project project) {
+    void apply(Project project) {
+        // apply build info plugin - necessary for Artifactory properties
         project.rootProject.plugins.apply(BuildInfoPlugin)
+        // apply Artifactory publishing plugin
         project.rootProject.plugins.apply(ArtifactoryPlugin)
 
+        //Configuration will be applied only if runOnCI is true
         String runOnCI = getVariable(project, RUNONCI_ENV, RUNONCI_PRJ, 'false')
-        project.logger.info('Publishing Configuration: RunOnCI: {}', runOnCI.toBoolean())
+        project.logger.debug('Publishing Configuration: RunOnCI: {}', runOnCI.toBoolean())
 
         if (runOnCI.toBoolean()) {
-            project.logger.info('Intershop simple release publishing configuration for Artifactory will be applied to project {}', project.name)
+            project.logger.info('Intershop publishing configuration for Artifactory will be applied to project {}', project.name)
 
+            // Publishing configuration
             String repoBaseURL = getVariable(project, REPO_BASEURL_ENV, REPO_BASEURL_PRJ, '')
             String repoUserLogin = getVariable(project, REPO_USER_NAME_ENV, REPO_USER_NAME_PRJ, '')
             String repoUserPassword = getVariable(project, REPO_USER_PASSWORD_ENV, REPO_USER_PASSWORD_PRJ, '')
@@ -69,9 +75,6 @@ class SimpleArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
             if(repoBaseURL && repoUserLogin && repoUserPassword && repoReleaseKey && repoSnapshotKey) {
                 ArtifactoryPluginConvention artifactoryPluginConvention = project.rootProject.convention.getPlugin(ArtifactoryPluginConvention)
                 BuildInfoExtension infoExtension = project.extensions.findByType(BuildInfoExtension)
-
-                // no build information in jar files
-                infoExtension.noJarInfo = true
 
                 project.artifactory {
                     contextUrl = repoBaseURL
@@ -88,7 +91,7 @@ class SimpleArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
                         }
                     }
 
-                    String buildNumber = infoExtension.ciProvider.buildNumber?:'' + new java.util.Random(System.currentTimeMillis()).nextInt(20000)
+                    String buildNumber = infoExtension.ciProvider.buildNumber?:'' + new Random(System.currentTimeMillis()).nextInt(20000)
                     String buildTimeStamp = infoExtension.ciProvider.buildTime?:'' + (new Date()).toTimestamp()
                     String vcsRevision = infoExtension.scmProvider.SCMRevInfo?:'unknown'
 
@@ -113,12 +116,16 @@ class SimpleArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
                     clientConfig.publisher.addMatrixParam('scm.type', infoExtension?.scmProvider.SCMType?:'unknown')
                     clientConfig.publisher.addMatrixParam('scm.branch.name', infoExtension?.scmProvider.branchName?:'unknown')
                     clientConfig.publisher.addMatrixParam('scm.change.time', infoExtension?.scmProvider.lastChangeTime?:'unknown')
+
+                    clientConfig.publisher.addMatrixParam('project.version', infoExtension?.infoProvider.projectVersion)
+                    clientConfig.publisher.addMatrixParam('project.name', infoExtension?.infoProvider.rootProject)
                 }
                 project.rootProject.allprojects {
                     it.plugins.apply(ArtifactoryPlugin)
                 }
 
-                project.rootProject.rootProject.afterEvaluate {
+                // configuration depends on version ... this is available after evaluation
+                project.rootProject.afterEvaluate {
                     artifactoryPluginConvention.clientConfig.publisher.repoKey = project.version.toString().endsWith('-SNAPSHOT') ? repoSnapshotKey : repoReleaseKey
                 }
             }

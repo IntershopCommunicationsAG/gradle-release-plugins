@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Intershop Communications AG.
+ * Copyright 2017 Intershop Communications AG.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,12 @@
 
 package com.intershop.gradle.javasource
 
+import groovy.transform.CompileDynamic
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.plugins.JavaBasePlugin
+import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.publish.ivy.IvyPublication
 import org.gradle.api.publish.ivy.plugins.IvyPublishPlugin
 import org.gradle.api.publish.maven.MavenPublication
@@ -28,6 +30,11 @@ import org.gradle.api.tasks.bundling.Jar
 
 import static com.intershop.gradle.util.PluginHelper.*
 
+/**
+ * This configuration adds an source jar for java projects if RunOnCI is true.
+ * The package is add to the correct publication.
+ */
+@CompileDynamic
 class JavaSourcePlugin implements Plugin<Project> {
 
     private Project project
@@ -41,37 +48,39 @@ class JavaSourcePlugin implements Plugin<Project> {
         // sources will be only added the the package on the CI server.
         if (runOnCI.toBoolean()) {
             // create task for sources
-            project.plugins.withType(JavaBasePlugin) {
-                Task sourceJar = project.tasks.maybeCreate('sourceJar', Jar)
-                sourceJar.from(project.sourceSets.main.allJava)
-                sourceJar.setClassifier('sources')
-            }
+            project.plugins.withType(JavaPlugin) {
 
-            // add source jar for ivy publishing
-            project.plugins.withType(IvyPublishPlugin) {
-                Task sourceJar = project.tasks.findByName('sourceJar')
-                if (sourceJar) {
+                project.tasks.create('sourceJar', Jar) {
+                    dependsOn project.tasks.getByName('classes')
+                    from project.sourceSets.main.allSource
+                    classifier 'sources'
+                    extension 'jar'
+                    group 'build'
+                }
+
+                // add source jar for ivy publishing
+                project.plugins.withType(IvyPublishPlugin) {
                     project.publishing {
                         publications {
                             ivy(IvyPublication) {
-                                artifact(sourceJar) {
+                                configurations {
+                                    create("sources", { extend "default"})
+                                }
+                                artifact(project.tasks.sourceJar) {
                                     type 'sources'
-                                    conf 'runtime'
+                                    conf 'sources'
                                 }
                             }
                         }
                     }
                 }
-            }
 
-            // add source jar for mvn publishing
-            project.plugins.withType(MavenPublishPlugin) {
-                Task sourceJar = project.tasks.findByName('sourceJar')
-                if (sourceJar) {
+                // add source jar for mvn publishing
+                project.plugins.withType(MavenPublishPlugin) {
                     project.publishing {
                         publications {
                             mvn(MavenPublication) {
-                                artifact(sourceJar) {
+                                artifact(project.tasks.sourceJar) {
                                     classifier 'sources'
                                 }
                             }

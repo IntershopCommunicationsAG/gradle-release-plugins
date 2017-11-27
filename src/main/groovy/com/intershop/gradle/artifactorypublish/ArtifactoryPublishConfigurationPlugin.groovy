@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Intershop Communications AG.
+ * Copyright 2017 Intershop Communications AG.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ import com.intershop.gradle.buildinfo.BuildInfoExtension
 import com.intershop.gradle.buildinfo.BuildInfoPlugin
 import com.intershop.gradle.jiraconnector.JiraConnectorPlugin
 import com.intershop.gradle.repoconfig.RepoConfigRegistry
+import groovy.transform.CompileDynamic
+import groovy.transform.CompileStatic
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -29,19 +31,24 @@ import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
 import static com.intershop.gradle.util.PluginHelper.*
 
 /**
- * This is the implementation of the plugin.
+ * This plugin adds a configuration for an publishing with artifactory.
+ * A change log will be created and Jira issues adapted. This behaviour
+ * depends on the settings of environment variables.
  */
+@CompileDynamic
 class ArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
 
-    // Repo SNAPSHOT Path (based on Nexus Base URL configuration)
+    /** Repository Configuration - Start **/
+
+    // Repo SNAPSHOT Path (based on Artifactory Base URL configuration)
     public final static String SNAPSHOT_KEY_ENV = 'SNAPSHOTREPOKEY'
     public final static String SNAPSHOT_KEY_PRJ = 'snapshotRepoKey'
 
-    // Repo RELEASE Path (based on Nexus Base URL configuration)
+    // Repo RELEASE Path (based on Artifactory Base URL configuration)
     public final static String RELEASE_KEY_ENV = 'RELEASEREPOKEY'
     public final static String RELEASE_KEY_PRJ = 'releaseRepoKey'
 
-    // dublicated from nexusstaging-gradle-plugin
+    // dublicated from artifactory-gradle-plugin
     public final static String REPO_BASEURL_ENV = 'ARTIFACTORYBASEURL'
     public final static String REPO_BASEURL_PRJ = 'artifactoryBaseURL'
 
@@ -65,95 +72,32 @@ class ArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
 
     /** Jira configuration - End **/
 
-    public void apply(Project project) {
-        project.rootProject.plugins.apply(BuildInfoPlugin)
-        project.rootProject.plugins.apply(ArtifactoryPlugin)
+    void apply(Project project) {
+        // apply SimpleArtifactoryPublishConfigurationPlugin
+        project.rootProject.plugins.apply(SimpleArtifactoryPublishConfigurationPlugin)
 
+
+        //Configuration will be applied only if runOnCI is true
         String runOnCI = getVariable(project, RUNONCI_ENV, RUNONCI_PRJ, 'false')
-        project.logger.info('Publishing Configuration: RunOnCI: {}', runOnCI.toBoolean())
+        project.logger.debug('Publishing Configuration: RunOnCI: {}', runOnCI.toBoolean())
 
         if (runOnCI.toBoolean()) {
-            project.logger.info('Intershop release publishing configuration for Artifactory will be applied to project {}', project.name)
+            project.logger.info('Intershop Jira editing will be applied to project {}', project.name)
 
+            // Check for other plugins ...
             if (!project.rootProject.tasks.findByName('changelog')) {
                 throw new GradleException('Please apply also "com.intershop.gradle.scmversion"')
             }
 
-            String jiraFieldName = project.hasProperty('jiraFieldName') ? project.property('jiraFieldName') : 'Fix Version/s'
-
-            String repoBaseURL = getVariable(project, REPO_BASEURL_ENV, REPO_BASEURL_PRJ, '')
-            String repoUserLogin = getVariable(project, REPO_USER_NAME_ENV, REPO_USER_NAME_PRJ, '')
-            String repoUserPassword = getVariable(project, REPO_USER_PASSWORD_ENV, REPO_USER_PASSWORD_PRJ, '')
-
-            String repoReleaseKey = getVariable(project, RELEASE_KEY_ENV, RELEASE_KEY_PRJ, '')
-            String repoSnapshotKey = getVariable(project, SNAPSHOT_KEY_ENV, SNAPSHOT_KEY_PRJ, '')
-
-            if(repoBaseURL && repoUserLogin && repoUserPassword && repoReleaseKey && repoSnapshotKey) {
-                ArtifactoryPluginConvention artifactoryPluginConvention = project.rootProject.convention.getPlugin(ArtifactoryPluginConvention)
-                BuildInfoExtension infoExtension = project.extensions.findByType(BuildInfoExtension)
-
-                // no build information in jar files
-                infoExtension.noJarInfo = true
-
-                project.artifactory {
-                    contextUrl = repoBaseURL
-                    publish {
-                        repository {
-                            username = repoUserLogin
-                            password = repoUserPassword
-
-                            ivy {
-                                ivyLayout = RepoConfigRegistry.ivyPattern
-                                artifactLayout = RepoConfigRegistry.artifactPattern
-                                mavenCompatible = false
-                            }
-                        }
-                    }
-
-                    String buildNumber = infoExtension.ciProvider.buildNumber?:'' + new java.util.Random(System.currentTimeMillis()).nextInt(20000)
-                    String buildTimeStamp = infoExtension.ciProvider.buildTime?:'' + (new Date()).toTimestamp()
-                    String vcsRevision = infoExtension.scmProvider.SCMRevInfo?:'unknown'
-
-                    clientConfig.info.setBuildName(infoExtension.ciProvider.buildJob?:project.name)
-                    clientConfig.info.setBuildNumber(buildNumber)
-                    clientConfig.info.setBuildTimestamp(buildTimeStamp)
-                    clientConfig.info.setBuildUrl(infoExtension.ciProvider.buildUrl?:'unknown')
-                    clientConfig.info.setVcsRevision(vcsRevision)
-                    clientConfig.info.setVcsUrl(infoExtension.scmProvider.SCMOrigin?:'unknown')
-
-                    clientConfig.publisher.addMatrixParam('build.number', buildNumber)
-                    clientConfig.publisher.addMatrixParam('vcs.revision', vcsRevision)
-                    clientConfig.publisher.addMatrixParam('build.timestamp', buildTimeStamp)
-
-                    clientConfig.publisher.addMatrixParam('build.java.version', infoExtension.infoProvider.javaVersion)
-                    clientConfig.publisher.addMatrixParam('source.java.version', infoExtension.infoProvider.javaSourceCompatibility ?: infoExtension.infoProvider.javaVersion.split('_')[0])
-                    clientConfig.publisher.addMatrixParam('target.java.version', infoExtension?.infoProvider.javaTargetCompatibility ?: infoExtension?.infoProvider.javaVersion.split('_')[0])
-                    clientConfig.publisher.addMatrixParam('build.status', infoExtension?.infoProvider.projectStatus?:'unknown')
-                    clientConfig.publisher.addMatrixParam('build.date', infoExtension?.infoProvider.OSTime?:'unknown')
-                    clientConfig.publisher.addMatrixParam('gradle.version', infoExtension?.infoProvider.gradleVersion?:'unknown')
-                    clientConfig.publisher.addMatrixParam('gradle.rootproject', infoExtension?.infoProvider.rootProject?:'unknown')
-                    clientConfig.publisher.addMatrixParam('scm.type', infoExtension?.scmProvider.SCMType?:'unknown')
-                    clientConfig.publisher.addMatrixParam('scm.branch.name', infoExtension?.scmProvider.branchName?:'unknown')
-                    clientConfig.publisher.addMatrixParam('scm.change.time', infoExtension?.scmProvider.lastChangeTime?:'unknown')
-
-                    clientConfig.publisher.addMatrixParam('project.version', infoExtension?.infoProvider.projectVersion)
-                    clientConfig.publisher.addMatrixParam('project.name', infoExtension?.infoProvider.rootProject)
-                }
-                project.rootProject.allprojects {
-                    it.plugins.apply(ArtifactoryPlugin)
-                }
-
-                project.rootProject.rootProject.afterEvaluate {
-                    artifactoryPluginConvention.clientConfig.publisher.repoKey = project.version.toString().endsWith('-SNAPSHOT') ? repoSnapshotKey : repoReleaseKey
-                }
-            }
-
+            // Jira editor configuration
             String jiraBaseURL = getVariable(project, JIRA_BASEURL_ENV, JIRA_BASEURL_PRJ, '')
             String jiraUserLogin = getVariable(project, JIRA_USER_NAME_ENV, JIRA_USER_NAME_PRJ, '')
             String jiraUserPassword = getVariable(project, JIRA_USER_PASSWORD_ENV, JIRA_USER_PASSWORD_PRJ, '')
 
             if(jiraBaseURL && jiraUserLogin && jiraUserPassword) {
                 project.rootProject.plugins.apply(JiraConnectorPlugin)
+
+                String jiraFieldName = project.hasProperty('jiraFieldName') ? project.property('jiraFieldName') : 'Fix Version/s'
 
                 project.rootProject.jiraConnector {
                     linePattern = '3\\+.*'
@@ -169,8 +113,9 @@ class ArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
                 project.rootProject.tasks.setIssueField.dependsOn project.rootProject.tasks.changelog
 
                 // run change log creation with a separate call ...
-                Task releaseLog = project.rootProject.tasks.maybeCreate('releaseLog')
+                project.rootProject.tasks.maybeCreate('releaseLog')
 
+                // configuration depends on version ... this is available after evaluation
                 project.getRootProject().afterEvaluate {
                     project.jiraConnector.fieldValue = "${project.name}/${project.version}"
 
@@ -181,18 +126,13 @@ class ArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
                 }
             }
 
-            project.rootProject.rootProject.afterEvaluate {
-                if(! project.version.toString().endsWith('-SNAPSHOT')) {
-                    // add javadoc to root project
-                    project.getRootProject().ext.releaseWithJavaDoc = 'true'
-                    // add javadoc to sub project
-                    project.getRootProject().getSubprojects().each { Project subp ->
-                        subp.ext.releaseWithJavaDoc = 'true'
-                    }
-                } else {
+            // configuration depends on version ... this is available after evaluation
+            project.rootProject.afterEvaluate {
+                if(project.version.toString().endsWith('-SNAPSHOT')) {
                     System.setProperty('ENABLE_SNAPSHOTS', 'true')
                 }
             }
+
         }
     }
 }

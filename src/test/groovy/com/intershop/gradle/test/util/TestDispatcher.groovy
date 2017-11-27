@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Intershop Communications AG.
+ * Copyright 2017 Intershop Communications AG.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,13 +23,13 @@ import com.squareup.okhttp.mockwebserver.RecordedRequest
 
 class TestDispatcher {
 
-    public static Dispatcher getIntegrationDispatcher(Map responses, List<String> uploadlist) {
+    static Dispatcher getIntegrationDispatcher(Map responses, List<String> uploadlist) {
         String[] jiraResponses = ['emptyLabels.response', 'oneversionLabels.response']
         int jiraResponseCount = 0
 
         Dispatcher dispatcher = new Dispatcher() {
             @Override
-            public MockResponse dispatch(RecordedRequest request) throws InterruptedException {
+            MockResponse dispatch(RecordedRequest request) throws InterruptedException {
                 String line = request.getRequestLine()
                 String path = request.getPath()
                 String userAgent = request.headers.get('User-Agent')
@@ -39,7 +39,7 @@ class TestDispatcher {
 
                     println "---------------------------"
                     println request.toString()
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream()
                     request.body.buffer().copyTo(baos)
                     println baos.toString()
                     println "---------------------------"
@@ -233,11 +233,13 @@ class TestDispatcher {
                 return new MockResponse()
             }
         }
+
+        return dispatcher
     }
 
     private static String getResponse(String name) {
-        ClassLoader classLoader = TestDispatcher.class.getClassLoader();
-        URL resource = classLoader.getResource(name);
+        ClassLoader classLoader = TestDispatcher.class.getClassLoader()
+        URL resource = classLoader.getResource(name)
         if (resource == null) {
             throw new RuntimeException("Could not find classpath resource: $name")
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Intershop Communications AG.
+ * Copyright 2017 Intershop Communications AG.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,10 @@ import static org.gradle.testkit.runner.TaskOutcome.UP_TO_DATE
 class SingleProjectSpec extends AbstractIntegrationSpec {
 
     static String issueKey = 'ISTOOLS-993'
+    static String pluginConfig = """
+                  id 'com.intershop.gradle.scmversion' version '3.2.0'
+                  id 'com.intershop.gradle.artifactorypublish-configuration'
+    """.stripIndent()
 
     @Rule
     public final MockWebServer server = new MockWebServer()
@@ -60,9 +64,7 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
             plugins {
                 id 'java'
                 id 'ivy-publish'
-                id 'com.intershop.gradle.scmversion' version '1.3.0'
-                id 'com.intershop.gradle.buildinfo' version '2.0.0'
-                id 'com.intershop.gradle.artifactorypublish-configuration'
+                ${pluginConfig}
             }
 
             group = 'com.intershop'
@@ -143,11 +145,13 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
             plugins {
                 id 'java'
                 id 'ivy-publish'
-                id 'com.intershop.gradle.scmversion' version '1.3.0'
-                id 'com.intershop.gradle.buildinfo' version '2.0.0'
-                id 'com.intershop.gradle.artifactorypublish-configuration'
+                ${pluginConfig}
             }
 
+            repositories {
+                jcenter()
+            }
+                
             group = 'com.intershop'
             version = '1.1.0'
 
@@ -223,9 +227,7 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
             plugins {
                 id 'java'
                 id 'maven-publish'
-                id 'com.intershop.gradle.scmversion' version '1.3.0'
-                id 'com.intershop.gradle.buildinfo' version '2.0.0'
-                id 'com.intershop.gradle.artifactorypublish-configuration'
+                ${pluginConfig}
             }
 
             group = 'com.intershop'
@@ -303,9 +305,7 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
             plugins {
                 id 'java'
                 id 'ivy-publish'
-                id 'com.intershop.gradle.scmversion' version '1.3.0'
-                id 'com.intershop.gradle.buildinfo' version '2.0.0'
-                id 'com.intershop.gradle.artifactorypublish-configuration'
+                ${pluginConfig}
             }
 
             group = 'com.intershop'
@@ -382,9 +382,7 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
             plugins {
                 id 'java'
                 id 'ivy-publish'
-                id 'com.intershop.gradle.scmversion' version '1.3.0'
-                id 'com.intershop.gradle.buildinfo' version '2.0.0'
-                id 'com.intershop.gradle.artifactorypublish-configuration'
+                ${pluginConfig}
             }
 
             group = 'com.intershop'

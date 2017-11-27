@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Intershop Communications AG.
+ * Copyright 2017 Intershop Communications AG.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,11 @@ class MultiProjectSimpleArtifactoryPublishSpec extends AbstractIntegrationSpec {
 
     String configURL = System.properties['configURL']
     String configToken = System.properties['configURLToken']
+
+    static String pluginConfig = """
+                  id 'com.intershop.gradle.scmversion' version '3.2.0'
+                  id 'com.intershop.gradle.simpleartifactorypublish-configuration'
+    """.stripIndent()
 
     private static String buildFileContentBase = """
                                           plugins {
@@ -77,10 +82,8 @@ class MultiProjectSimpleArtifactoryPublishSpec extends AbstractIntegrationSpec {
 
         buildFile << """
                 plugins {
-                  id "ivy-publish"
-                  id 'com.intershop.gradle.scmversion' version '1.3.0'
-                  id 'com.intershop.gradle.buildinfo' version '2.0.0'
-                  id 'com.intershop.gradle.simpleartifactorypublish-configuration'
+                  id 'ivy-publish'
+                  ${pluginConfig}
                 }
 
                 group = 'com.intershop.testproject'
@@ -142,10 +145,8 @@ class MultiProjectSimpleArtifactoryPublishSpec extends AbstractIntegrationSpec {
 
         buildFile << """
                 plugins {
-                  id "maven-publish"
-                  id 'com.intershop.gradle.scmversion' version '1.3.0'
-                  id 'com.intershop.gradle.buildinfo' version '2.0.0'
-                  id 'com.intershop.gradle.simpleartifactorypublish-configuration'
+                  id 'maven-publish'
+                  ${pluginConfig}
                 }
 
                 group = 'com.intershop.testproject'
@@ -202,10 +203,8 @@ class MultiProjectSimpleArtifactoryPublishSpec extends AbstractIntegrationSpec {
 
         buildFile << """
                 plugins {
-                  id "ivy-publish"
-                  id 'com.intershop.gradle.scmversion' version '1.3.0'
-                  id 'com.intershop.gradle.buildinfo' version '2.0.0'
-                  id 'com.intershop.gradle.simpleartifactorypublish-configuration'
+                  id 'ivy-publish'
+                  ${pluginConfig}
                 }
 
                 group = 'com.intershop.testproject'
@@ -265,10 +264,8 @@ class MultiProjectSimpleArtifactoryPublishSpec extends AbstractIntegrationSpec {
 
         buildFile << """
                 plugins {
-                  id "ivy-publish"
-                  id 'com.intershop.gradle.scmversion' version '1.3.0'
-                  id 'com.intershop.gradle.buildinfo' version '2.0.0'
-                  id 'com.intershop.gradle.simpleartifactorypublish-configuration'
+                  id 'ivy-publish'
+                  ${pluginConfig}
                 }
 
                 group = 'com.intershop.testproject'

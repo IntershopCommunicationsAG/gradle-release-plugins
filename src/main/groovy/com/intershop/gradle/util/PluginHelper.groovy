@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Intershop Communications AG.
+ * Copyright 2017 Intershop Communications AG.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,10 @@
  */
 package com.intershop.gradle.util
 
+import groovy.transform.CompileStatic
 import org.gradle.api.Project
 
+@CompileStatic
 class PluginHelper {
 
     // run on CI server
@@ -32,16 +34,16 @@ class PluginHelper {
      * @param defaultValue  default value
      * @return              the string configuration
      */
-    public static String getVariable(Project project, String envVar, String projectVar, String defaultValue) {
+    static String getVariable(Project project, String envVar, String projectVar, String defaultValue) {
         if(System.properties[envVar]) {
             project.logger.debug('Specified from system property {}.', envVar)
             return System.properties[envVar].toString().trim()
         } else if(System.getenv(envVar)) {
             project.logger.debug('Specified from system environment property {}.', envVar)
             return System.getenv(envVar).toString().trim()
-        } else if(project.hasProperty(projectVar) && project."${projectVar}") {
+        } else if(project.hasProperty(projectVar) && project.property(projectVar).toString().trim()) {
             project.logger.debug('Specified from project property {}.', projectVar)
-            return project."${projectVar}".toString().trim()
+            return project.property(projectVar).toString().trim()
         }
         return defaultValue
     }
