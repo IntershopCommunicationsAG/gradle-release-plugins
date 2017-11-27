@@ -199,16 +199,12 @@ pluginBundle {
             displayName = 'Plugin for escrow package creation'
         }
         javadocPlugin {
-            id = 'com.intershop.gradle.javadoc-configuration'
+            id = 'com.intershop.gradle.javadoc-plugin'
             displayName = 'Plugin with Intershop specific javadoc configuration'
         }
         javasourcePlugin {
             id = 'com.intershop.gradle.javasource-plugin'
             displayName = 'Plugin with Intershop specific javasource package configuration'
-        }
-        nexuspublishPlugin {
-            id = 'com.intershop.gradle.nexuspublish-configuration'
-            displayName = 'Plugin with specific publishing configuration'
         }
         simplepublishPlugin {
             id = 'com.intershop.gradle.simplepublish-configuration'
