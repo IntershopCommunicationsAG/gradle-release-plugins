@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Intershop Communications AG.
+ * Copyright 2017 Intershop Communications AG.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package com.intershop.gradle.simplepublish
 
+import groovy.transform.CompileDynamic
+import groovy.transform.CompileStatic
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.publish.ivy.plugins.IvyPublishPlugin
@@ -25,6 +27,7 @@ import static com.intershop.gradle.util.PluginHelper.*
 /**
  * This is the implementation of the plugin.
  */
+@CompileStatic
 class PublishConfigurationPlugin  implements Plugin<Project> {
 
     // Repo SNAPSHOT URL
@@ -57,12 +60,12 @@ class PublishConfigurationPlugin  implements Plugin<Project> {
     public final static String IVYREPONAME = 'intershopIvyCI'
     public final static String MVNREPOName = 'intershopMvnCI'
 
-    public void apply(Project project) {
+    void apply(Project project) {
         String runOnCI = getVariable(project, RUNONCI_ENV, RUNONCI_PRJ, 'false')
         project.logger.info('Publishing Configuration: RunOnCI: {}', runOnCI.toBoolean())
 
         //provide compatibility with the repo config plung
-        project.ext.useSCMVersionConfig = 'true'
+        project.getExtensions().extraProperties.set('useSCMVersionConfig', 'true')
 
         if (runOnCI.toBoolean()) {
             project.logger.info('Simple release publishing configuration will be applied to project {}', project.name)
@@ -97,12 +100,12 @@ class PublishConfigurationPlugin  implements Plugin<Project> {
                 if(snapshotRelease.toLowerCase() == 'true') {
                     project.version = "$project.version-SNAPSHOT"
                 }
-                if(! project.version.endsWith('-SNAPSHOT')) {
+                if(! project.version.toString().endsWith('-SNAPSHOT')) {
                     // add javadoc to root project
-                    project.getRootProject().ext.releaseWithJavaDoc = 'true'
+                    project.getRootProject().getExtensions().extraProperties.set('releaseWithJavaDoc', 'true')
                     // add javadoc to sub project
                     project.getRootProject().getSubprojects().each { Project subp ->
-                        subp.ext.releaseWithJavaDoc = 'true'
+                        subp.getExtensions().extraProperties.set('releaseWithJavaDoc', 'true')
                     }
                 }
             }
@@ -115,6 +118,7 @@ class PublishConfigurationPlugin  implements Plugin<Project> {
         }
     }
 
+    @CompileDynamic
     private void applySnapshotPublishing(Project p, String snapshotURL, String repoUser, String repoUserPasswd, boolean useSnapShotRepo = false) {
         p.plugins.withType(IvyPublishPlugin) {
             p.publishing {
@@ -191,6 +195,7 @@ class PublishConfigurationPlugin  implements Plugin<Project> {
         }
     }
 
+    @CompileDynamic
     private void applyReleasePublishing(Project p, String releaseURL, String repoUser, String repoUserPasswd) {
         p.plugins.withType(IvyPublishPlugin) {
             p.publishing {

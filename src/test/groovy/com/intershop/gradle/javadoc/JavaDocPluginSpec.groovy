@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Intershop Communications AG.
+ * Copyright 2017 Intershop Communications AG.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,15 @@
  * See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
-
-package com.intershop.gradle.nexuspublish
+package com.intershop.gradle.javadoc
 
 import com.intershop.gradle.test.AbstractProjectSpec
 import org.gradle.api.Plugin
 
-class ProjectNexusPublishPluginSpec extends AbstractProjectSpec  {
+class JavaDocPluginSpec extends AbstractProjectSpec{
 
     @Override
     Plugin getPlugin() {
-        return new NexusPublishConfigurationPlugin()
+        return new JavaDocPlugin()
     }
 }

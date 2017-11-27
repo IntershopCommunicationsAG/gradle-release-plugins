@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Intershop Communications AG.
+ * Copyright 2017 Intershop Communications AG.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -115,7 +115,7 @@ class MultiProjectSpec extends AbstractIntegrationSpec {
         createSubProjectJava('project2b', settingsfile, 'com.intereshop.b', buildFileContent, '1.0.0')
 
         when:
-        def result = getPreparedGradleRunner()
+        getPreparedGradleRunner()
                 .withArguments('publish', '--stacktrace', '-i', "-DRUNONCI=true", "-PsnapshotURL=${urlStr}nexus/snapshots", "-PreleaseURL=${urlStr}nexus/releases", '-PrepoUserName=admin', '-PrepoUserPasswd=admin123')
                 .build()
 

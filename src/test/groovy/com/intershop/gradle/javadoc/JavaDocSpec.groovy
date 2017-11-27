@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Intershop Communications AG.
+ * Copyright 2017 Intershop Communications AG.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,11 @@
 package com.intershop.gradle.javadoc
 
 import com.intershop.gradle.test.AbstractIntegrationSpec
+import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.Unroll
 
 @Unroll
-class JavaDocConfigurationSpec extends AbstractIntegrationSpec {
+class JavaDocSpec extends AbstractIntegrationSpec {
 
     def 'test javadoc generation (Gradle #gradleVersion)'(gradleVersion) {
         given:
@@ -27,7 +28,7 @@ class JavaDocConfigurationSpec extends AbstractIntegrationSpec {
             plugins {
                 id 'java'
                 id 'ivy-publish'
-                id 'com.intershop.gradle.javadoc-configuration'
+                id 'com.intershop.gradle.javadoc-plugin'
             }
 
             group = 'com.intershop'
@@ -90,7 +91,7 @@ class JavaDocConfigurationSpec extends AbstractIntegrationSpec {
             plugins {
                 id 'java'
                 id 'ivy-publish'
-                id 'com.intershop.gradle.javadoc-configuration'
+                id 'com.intershop.gradle.javadoc-plugin'
             }
 
             group = 'com.intershop'
@@ -148,4 +149,54 @@ class JavaDocConfigurationSpec extends AbstractIntegrationSpec {
         where:
         gradleVersion << supportedGradleVersions
     }
+
+    def 'test javadoc publishing ivy (Gradle #gradleVersion)'(gradleVersion) {
+        given:
+        buildFile << """
+            plugins {
+                id 'java'
+                id 'ivy-publish'
+                id 'com.intershop.gradle.javadoc-plugin'
+            }
+
+            group = 'com.intershop'
+            version = '1.0.0'
+
+            publishing {
+                repositories {
+                    ivy {
+                        url "\${rootProject.buildDir}/repo"
+                    }
+                }
+                publications {
+                    ivy(IvyPublication) {
+                        from components.java
+                    }
+                }
+            }
+        """.stripIndent()
+
+        File settingsfile = file('settings.gradle')
+        settingsfile << """
+            // define root proejct name
+            rootProject.name = 'testProject'
+        """.stripIndent()
+        writeJavaTestClass("com.intershop.test")
+
+        when:
+        def result = getPreparedGradleRunner()
+                .withArguments('clean', 'publish', '--stacktrace', '-i', '-PrunOnCI=true')
+                .withGradleVersion(gradleVersion)
+                .build()
+
+        File fIndex = new File(testProjectDir, 'build/docs/javadoc/index.html')
+
+        then:
+        fIndex.exists()
+        result.task(':publish').outcome == TaskOutcome.SUCCESS
+
+        where:
+        gradleVersion << supportedGradleVersions
+    }
+
 }

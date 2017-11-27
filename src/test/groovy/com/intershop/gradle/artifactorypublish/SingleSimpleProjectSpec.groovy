@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Intershop Communications AG.
+ * Copyright 2017 Intershop Communications AG.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,11 @@ import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 
 class SingleSimpleProjectSpec extends AbstractIntegrationSpec {
 
+    static String pluginConfig = """
+                  id 'com.intershop.gradle.scmversion' version '3.2.0'
+                  id 'com.intershop.gradle.simpleartifactorypublish-configuration'
+    """.stripIndent()
+
     @Rule
     public final MockWebServer server = new MockWebServer()
 
@@ -41,9 +46,7 @@ class SingleSimpleProjectSpec extends AbstractIntegrationSpec {
             plugins {
                 id 'java'
                 id 'ivy-publish'
-                id 'com.intershop.gradle.scmversion' version '1.3.0'
-                id 'com.intershop.gradle.buildinfo' version '2.0.0'
-                id 'com.intershop.gradle.simpleartifactorypublish-configuration'
+                ${pluginConfig}
             }
 
             group = 'com.intershop'
@@ -104,9 +107,7 @@ class SingleSimpleProjectSpec extends AbstractIntegrationSpec {
             plugins {
                 id 'java'
                 id 'maven-publish'
-                id 'com.intershop.gradle.scmversion' version '1.3.0'
-                id 'com.intershop.gradle.buildinfo' version '2.0.0'
-                id 'com.intershop.gradle.simpleartifactorypublish-configuration'
+                ${pluginConfig}
             }
 
             group = 'com.intershop'
@@ -164,9 +165,7 @@ class SingleSimpleProjectSpec extends AbstractIntegrationSpec {
             plugins {
                 id 'java'
                 id 'ivy-publish'
-                id 'com.intershop.gradle.scmversion' version '1.3.0'
-                id 'com.intershop.gradle.buildinfo' version '2.0.0'
-                id 'com.intershop.gradle.simpleartifactorypublish-configuration'
+                ${pluginConfig}
             }
 
             group = 'com.intershop'

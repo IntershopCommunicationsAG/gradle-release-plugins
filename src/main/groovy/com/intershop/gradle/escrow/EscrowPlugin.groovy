@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Intershop Communications AG.
+ * Copyright 2017 Intershop Communications AG.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 package com.intershop.gradle.escrow
 
+import groovy.transform.CompileDynamic
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -30,20 +31,21 @@ import org.gradle.api.tasks.bundling.Zip
 /**
  * This is the implementation of the plugin.
  */
+@CompileDynamic
 class EscrowPlugin implements Plugin<Project> {
 
     private EscrowExtension pluginExtension
 
-    public void apply(Project project) {
+    void apply(Project project) {
         project.logger.info('Create extension {} for {}', EscrowExtension.ESCROW_EXTENSION_NAME, project.name)
         pluginExtension = project.extensions.create(EscrowExtension.ESCROW_EXTENSION_NAME, EscrowExtension, project)
 
-        if (pluginExtension.isRunOnCI() && pluginExtension.runOnCI == true) {
+        if (pluginExtension.isRunOnCI() && pluginExtension.runOnCI) {
             project.plugins.withType(IvyPublishPlugin) {
                 project.publishing {
                     if(! project.getVersion().toString().toLowerCase().endsWith('snapshot')) {
                         publications {
-                            ivyEscrow(IvyPublication) {
+                            ivy(IvyPublication) {
                                 organisation = pluginExtension.getSourceGroup()
                                 artifact(getConfigurePackageTask(project)) {
                                     classifier = pluginExtension.getClassifier()
@@ -58,7 +60,7 @@ class EscrowPlugin implements Plugin<Project> {
                 project.publishing {
                     if(! project.getVersion().toString().toLowerCase().endsWith('snapshot')) {
                         publications {
-                            mvnEscrow(MavenPublication) {
+                            mvn(MavenPublication) {
                                 groupId = pluginExtension.getSourceGroup()
                                 artifact(getConfigurePackageTask(project)) {
                                     classifier = pluginExtension.getClassifier()
@@ -71,7 +73,7 @@ class EscrowPlugin implements Plugin<Project> {
         }
 
         if(project.getName() != project.getRootProject().getName()) {
-            throw GradleException('It is not possible to apply this "escrow" plugin to Gradle sub projects.')
+            throw new GradleException('It is not possible to apply this "escrow" plugin to Gradle sub projects.')
         }
     }
 

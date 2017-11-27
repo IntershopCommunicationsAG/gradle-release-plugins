@@ -8,23 +8,20 @@ plugins {
     // ide plugin
     id 'idea'
 
-    // intershop test plugin
-    id 'com.intershop.gradle.test' version '2.2.0'
-
-    // plugin for documentation
-    id 'org.asciidoctor.convert' version '1.5.3'
-
     // publish plugin
     id 'maven-publish'
 
     // intershop version plugin
-    id 'com.intershop.gradle.scmversion' version '2.3.4'
+    id 'com.intershop.gradle.scmversion' version '3.2.0'
+
+    // plugin for documentation
+    id 'org.asciidoctor.convert' version '1.5.3'
 
     // plugin for publishing to Gradle Portal
-    id 'com.gradle.plugin-publish' version '0.9.7'
+    id 'com.gradle.plugin-publish' version '0.9.9'
 
     // plugin for publishing to jcenter
-    id 'com.jfrog.bintray' version '1.7.3'
+    id 'com.jfrog.bintray' version '1.8.0'
 }
 
 scm {
@@ -39,8 +36,8 @@ version = scm.version.version
 
 // plugins should work with JDK 1.7 aslong
 // older INTERSHOP version use this version of JDK
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 // set correct project status
 if (project.version.endsWith('-SNAPSHOT')) {
@@ -49,7 +46,7 @@ if (project.version.endsWith('-SNAPSHOT')) {
 
 test {
     // Gradle versions for test
-    systemProperty 'intershop.gradle.versions', '2.11,3.4'
+    systemProperty 'intershop.gradle.versions', '4.3.1'
 }
 
 task copyAsciiDoc {
@@ -135,7 +132,7 @@ publishing {
             }
 
             pom.withXml {
-                def Node root = asNode();
+                Node root = asNode()
                 root.appendNode('name', project.name)
                 root.appendNode('description', project.description)
                 root.appendNode('url', "https:/gitlab.intershop.de/IntershopGradlePlugins/${project.name}")
@@ -148,7 +145,7 @@ publishing {
                 org.appendNode( 'name', 'Intershop Communications' )
                 org.appendNode( 'url', 'http://intershop.com' )
 
-                def license = root.appendNode( 'licenses' ).appendNode( 'license' );
+                def license = root.appendNode( 'licenses' ).appendNode( 'license' )
                 license.appendNode( 'name', 'Apache License, Version 2.0' )
                 license.appendNode( 'url', 'http://www.apache.org/licenses/LICENSE-2.0' )
                 license.appendNode( 'distribution', 'repo' )
@@ -229,15 +226,15 @@ pluginBundle {
 }
 
 dependencies {
-    compile 'com.intershop.gradle.nexusstaging:nexusstaging-gradle-plugin:2.2.0'
-    compile 'com.intershop.gradle.jiraconnector:jiraconnector-gradle-plugin:2.4.3'
-    compile 'com.intershop.gradle.repoconfig:repoconfig-gradle-plugin:3.2.0'
-    compile 'org.jfrog.buildinfo:build-info-extractor-gradle:4.4.13'
-    compile 'com.intershop.gradle.buildinfo:buildinfo-gradle-plugin:2.3.1'
-
-    testCompile('org.spockframework:spock-core:1.0-groovy-2.4'){
-        exclude group: 'org.codehaus.groovy'
+    compile 'com.intershop.gradle.jiraconnector:jiraconnector-gradle-plugin:3.0.0'
+    compile 'com.intershop.gradle.repoconfig:repoconfig-gradle-plugin:4.0.0'
+    compile('org.jfrog.buildinfo:build-info-extractor-gradle:4.5.4') {
+        exclude module: 'groovy-all'
     }
+    compile 'com.intershop.gradle.buildinfo:buildinfo-gradle-plugin:3.1.0'
+
+    testCompile 'com.intershop.gradle.test:test-gradle-plugin:3.0.0'
+    testCompile gradleTestKit()
 
     // mock webserver
     testCompile 'com.squareup.okhttp:okhttp:2.7.5'

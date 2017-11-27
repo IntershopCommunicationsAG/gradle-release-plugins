@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Intershop Communications AG.
+ * Copyright 2017 Intershop Communications AG.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,10 +84,8 @@ class EscrowPluginSpec extends AbstractIntegrationSpec {
         """.stripIndent()
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir)
+        def result = getPreparedGradleRunner()
                 .withArguments('publish', '-PrunOnCI=true', '--stacktrace', '-i')
-                .withPluginClasspath(pluginClasspath)
                 .build()
 
         File fZip = new File(testProjectDir, 'build/repo/com.intershop.source/testProject/1.0.0/testProject-1.0.0-src.zip')
@@ -100,7 +98,7 @@ class EscrowPluginSpec extends AbstractIntegrationSpec {
         }
         then:
         result.task(':escrowZip').outcome == TaskOutcome.SUCCESS
-        result.output.contains('IvyEscrow')
+        result.output.contains('Ivy')
 
         fZip.exists()
         fIvy.exists()
@@ -182,10 +180,8 @@ class EscrowPluginSpec extends AbstractIntegrationSpec {
         """.stripIndent()
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir)
+        def result = getPreparedGradleRunner()
                 .withArguments('publish', '-PrunOnCI=true', '--stacktrace', '-i')
-                .withPluginClasspath(pluginClasspath)
                 .build()
 
         File fZip = new File(testProjectDir, 'build/repo/com.intershop.source/testProject/1.0.0/testProject-1.0.0-src.zip')
@@ -194,8 +190,6 @@ class EscrowPluginSpec extends AbstractIntegrationSpec {
         then:
         ! fZip.exists()
         ! fIvy.exists()
-
-        ! result.output.contains('IvyEscrow')
     }
 
     def 'ivy - test simple escrow file for multiproject - local'() {
@@ -257,10 +251,8 @@ class EscrowPluginSpec extends AbstractIntegrationSpec {
         """.stripIndent()
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir)
+        def result = getPreparedGradleRunner()
                 .withArguments('publish', '--stacktrace', '-i')
-                .withPluginClasspath(pluginClasspath)
                 .build()
 
         File fZip = new File(testProjectDir, 'build/repo/com.intershop.source/testProject/1.0.0/testProject-1.0.0-src.zip')
@@ -269,8 +261,6 @@ class EscrowPluginSpec extends AbstractIntegrationSpec {
         then:
         ! fZip.exists()
         ! fIvy.exists()
-
-        ! result.output.contains('IvyEscrow')
     }
 
     def 'mvn - test simple escrow file for multiproject'() {
@@ -332,10 +322,8 @@ class EscrowPluginSpec extends AbstractIntegrationSpec {
         """.stripIndent()
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir)
+        def result = getPreparedGradleRunner()
                 .withArguments('publish', '-PrunOnCI=true', '--stacktrace', '-i')
-                .withPluginClasspath(pluginClasspath)
                 .build()
 
         File fZip = new File(testProjectDir, 'build/repo/com/intershop/source/testProject/1.0.0/testProject-1.0.0-src.zip')
@@ -348,7 +336,7 @@ class EscrowPluginSpec extends AbstractIntegrationSpec {
         }
         then:
         result.task(':escrowZip').outcome == TaskOutcome.SUCCESS
-        result.output.contains('MvnEscrow')
+        result.output.contains('Mvn')
 
         fZip.exists()
         fPom.exists()
@@ -430,18 +418,14 @@ class EscrowPluginSpec extends AbstractIntegrationSpec {
         """.stripIndent()
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir)
+        def result = getPreparedGradleRunner()
                 .withArguments('publish', '-PrunOnCI=true', '--stacktrace', '-i')
-                .withPluginClasspath(pluginClasspath)
                 .build()
 
         File fZip = new File(testProjectDir, 'build/repo/com/intershop/source/testProject/1.0.0/testProject-1.0.0-src.zip')
         File fPom = new File(testProjectDir, 'build/repo/com/intershop/source/testProject/1.0.0/testProject-1.0.0.pom')
 
         then:
-        ! result.output.contains('MvnEscrow')
-
         ! fZip.exists()
         ! fPom.exists()
     }
@@ -505,18 +489,14 @@ class EscrowPluginSpec extends AbstractIntegrationSpec {
         """.stripIndent()
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir)
+        def result = getPreparedGradleRunner()
                 .withArguments('publish', '--stacktrace', '-i')
-                .withPluginClasspath(pluginClasspath)
                 .build()
 
         File fZip = new File(testProjectDir, 'build/repo/com/intershop/source/testProject/1.0.0/testProject-1.0.0-src.zip')
         File fPom = new File(testProjectDir, 'build/repo/com/intershop/source/testProject/1.0.0/testProject-1.0.0.pom')
 
         then:
-        ! result.output.contains('MvnEscrow')
-
         ! fZip.exists()
         ! fPom.exists()
     }
@@ -559,10 +539,8 @@ class EscrowPluginSpec extends AbstractIntegrationSpec {
         writeJavaTestClass("com.intershop.test")
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir)
+        def result = getPreparedGradleRunner()
                 .withArguments('publish', '-PrunOnCI=true', '--stacktrace', '-i')
-                .withPluginClasspath(pluginClasspath)
                 .build()
 
         File fZip = new File(testProjectDir, 'build/repo/com.intershop.source/testProject/1.0.0/testProject-1.0.0-src.zip')
@@ -576,7 +554,7 @@ class EscrowPluginSpec extends AbstractIntegrationSpec {
 
         then:
         result.task(':escrowZip').outcome == TaskOutcome.SUCCESS
-        result.output.contains('IvyEscrow')
+        result.output.contains('Ivy')
 
         fZip.exists()
         fIvy.exists()
@@ -627,18 +605,14 @@ class EscrowPluginSpec extends AbstractIntegrationSpec {
         writeJavaTestClass("com.intershop.test")
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir)
+        def result = getPreparedGradleRunner()
                 .withArguments('publish', '-PrunOnCI=true', '--stacktrace', '-i')
-                .withPluginClasspath(pluginClasspath)
                 .build()
 
         File fZip = new File(testProjectDir, 'build/repo/com.intershop.source/testProject/1.0.0/testProject-1.0.0-src.zip')
         File fIvy = new File(testProjectDir, 'build/repo/com.intershop.source/testProject/1.0.0/ivy-1.0.0.xml')
 
         then:
-        ! result.output.contains('IvyEscrow')
-
         ! fZip.exists()
         ! fIvy.exists()
     }
@@ -681,18 +655,14 @@ class EscrowPluginSpec extends AbstractIntegrationSpec {
         writeJavaTestClass("com.intershop.test")
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir)
+        def result = getPreparedGradleRunner()
                 .withArguments('publish', '--stacktrace', '-i')
-                .withPluginClasspath(pluginClasspath)
                 .build()
 
         File fZip = new File(testProjectDir, 'build/repo/com.intershop.source/testProject/1.0.0/testProject-1.0.0-src.zip')
         File fIvy = new File(testProjectDir, 'build/repo/com.intershop.source/testProject/1.0.0/ivy-1.0.0.xml')
 
         then:
-        ! result.output.contains('IvyEscrow')
-
         ! fZip.exists()
         ! fIvy.exists()
     }
@@ -736,10 +706,8 @@ class EscrowPluginSpec extends AbstractIntegrationSpec {
         writeJavaTestClass('com.intershop.test')
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir)
+        def result = getPreparedGradleRunner()
                 .withArguments('publish', '-PrunOnCI=true', '--stacktrace', '-i')
-                .withPluginClasspath(pluginClasspath)
                 .build()
 
         File fZip = new File(testProjectDir, 'build/repo/com/intershop/source/testProject/1.0.0/testProject-1.0.0-src.zip')
@@ -753,7 +721,7 @@ class EscrowPluginSpec extends AbstractIntegrationSpec {
 
         then:
         result.task(':escrowZip').outcome == TaskOutcome.SUCCESS
-        result.output.contains('MvnEscrow')
+        result.output.contains('Mvn')
 
         fZip.exists()
         fPom.exists()
@@ -805,18 +773,14 @@ class EscrowPluginSpec extends AbstractIntegrationSpec {
         writeJavaTestClass('com.intershop.test')
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir)
+        def result = getPreparedGradleRunner()
                 .withArguments('publish', '-PrunOnCI=true', '--stacktrace', '-i')
-                .withPluginClasspath(pluginClasspath)
                 .build()
 
         File fZip = new File(testProjectDir, 'build/repo/com/intershop/source/testProject/1.0.0/testProject-1.0.0-src.zip')
         File fPom = new File(testProjectDir, 'build/repo/com/intershop/source/testProject/1.0.0/testProject-1.0.0.pom')
 
         then:
-        ! result.output.contains('MvnEscrow')
-
         ! fZip.exists()
         ! fPom.exists()
     }
@@ -860,18 +824,14 @@ class EscrowPluginSpec extends AbstractIntegrationSpec {
         writeJavaTestClass('com.intershop.test')
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir)
+        def result = getPreparedGradleRunner()
                 .withArguments('publish', '--stacktrace', '-i')
-                .withPluginClasspath(pluginClasspath)
                 .build()
 
         File fZip = new File(testProjectDir, 'build/repo/com/intershop/source/testProject/1.0.0/testProject-1.0.0-src.zip')
         File fPom = new File(testProjectDir, 'build/repo/com/intershop/source/testProject/1.0.0/testProject-1.0.0.pom')
 
         then:
-        ! result.output.contains('MvnEscrow')
-
         ! fZip.exists()
         ! fPom.exists()
     }
@@ -915,10 +875,8 @@ class EscrowPluginSpec extends AbstractIntegrationSpec {
         writeJavaTestClass("com.intershop.test")
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir)
+        def result = getPreparedGradleRunner()
                 .withArguments('publish', '-PrunOnCI=true', '--stacktrace', '-i')
-                .withPluginClasspath(pluginClasspath)
                 .build()
 
         File fZip = new File(testProjectDir, 'build/repo/com.intershop.source/testProject/1.0.0/testProject-1.0.0-escrow.zip')
@@ -928,7 +886,7 @@ class EscrowPluginSpec extends AbstractIntegrationSpec {
 
         then:
         result.task(':escrowZip').outcome == TaskOutcome.SUCCESS
-        result.output.contains('IvyEscrow')
+        result.output.contains('Ivy')
 
         fZip.exists()
         fIvy.exists()
@@ -976,10 +934,8 @@ class EscrowPluginSpec extends AbstractIntegrationSpec {
         writeJavaTestClass('com.intershop.test')
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir)
+        def result = getPreparedGradleRunner()
                 .withArguments('publish', '-PrunOnCI=true', '--stacktrace', '-i')
-                .withPluginClasspath(pluginClasspath)
                 .build()
 
         File fZip = new File(testProjectDir, 'build/repo/com/intershop/source/testProject/1.0.0/testProject-1.0.0-escrow.zip')
@@ -987,7 +943,7 @@ class EscrowPluginSpec extends AbstractIntegrationSpec {
 
         then:
         result.task(':escrowZip').outcome == TaskOutcome.SUCCESS
-        result.output.contains('MvnEscrow')
+        result.output.contains('Mvn')
 
         fZip.exists()
         fPom.exists()
@@ -1054,10 +1010,8 @@ class EscrowPluginSpec extends AbstractIntegrationSpec {
         """.stripIndent()
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir)
+        def result = getPreparedGradleRunner()
                 .withArguments('publish', '-PrunOnCI=true', '--stacktrace', '-i')
-                .withPluginClasspath(pluginClasspath)
                 .build()
 
         File fZip = new File(testProjectDir, 'build/repo/com.intershop.source/testProject/1.0.0/testProject-1.0.0-src.zip')
@@ -1070,7 +1024,7 @@ class EscrowPluginSpec extends AbstractIntegrationSpec {
         }
         then:
         result.task(':escrowZip').outcome == TaskOutcome.SUCCESS
-        result.output.contains('IvyEscrow')
+        result.output.contains('Ivy')
 
         fZip.exists()
         fIvy.exists()
@@ -1158,10 +1112,8 @@ class EscrowPluginSpec extends AbstractIntegrationSpec {
         """.stripIndent()
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir)
+        def result = getPreparedGradleRunner()
                 .withArguments('publish', '-PrunOnCI=true', '--stacktrace', '-i')
-                .withPluginClasspath(pluginClasspath)
                 .build()
 
         File fZip = new File(testProjectDir, 'build/repo/com.intershop.source/testProject/1.0.0/testProject-1.0.0-src.zip')
@@ -1174,7 +1126,7 @@ class EscrowPluginSpec extends AbstractIntegrationSpec {
         }
         then:
         result.task(':escrowZip').outcome == TaskOutcome.SUCCESS
-        result.output.contains('IvyEscrow')
+        result.output.contains('Ivy')
 
         fZip.exists()
         fIvy.exists()
@@ -1266,10 +1218,8 @@ class EscrowPluginSpec extends AbstractIntegrationSpec {
         """.stripIndent()
 
         when:
-        def result = GradleRunner.create()
-                .withProjectDir(testProjectDir)
+        def result = getPreparedGradleRunner()
                 .withArguments('publish', '-PrunOnCI=true', '--stacktrace', '-i')
-                .withPluginClasspath(pluginClasspath)
                 .build()
 
         File fZip = new File(testProjectDir, 'build/repo/com.intershop.source/testProject/1.0.0/testProject-1.0.0-src.zip')
@@ -1282,7 +1232,7 @@ class EscrowPluginSpec extends AbstractIntegrationSpec {
         }
         then:
         result.task(':escrowZip').outcome == TaskOutcome.SUCCESS
-        result.output.contains('IvyEscrow')
+        result.output.contains('Ivy')
 
         fZip.exists()
         fIvy.exists()
