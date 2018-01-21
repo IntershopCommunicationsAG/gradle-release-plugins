@@ -21,7 +21,6 @@ import groovy.transform.TypeChecked
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.publish.ivy.IvyPublication
 import org.gradle.api.publish.ivy.plugins.IvyPublishPlugin
@@ -30,9 +29,7 @@ import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.javadoc.Javadoc
 
-import static com.intershop.gradle.util.PluginHelper.RUNONCI_ENV
-import static com.intershop.gradle.util.PluginHelper.RUNONCI_PRJ
-import static com.intershop.gradle.util.PluginHelper.getVariable
+import static com.intershop.gradle.util.PluginHelper.*
 
 /**
  * This configuration configure javadoc for java projects.
