@@ -12,7 +12,7 @@ plugins {
     id 'maven-publish'
 
     // intershop version plugin
-    id 'com.intershop.gradle.scmversion' version '3.2.0'
+    id 'com.intershop.gradle.scmversion' version '3.4.0'
 
     // plugin for documentation
     id 'org.asciidoctor.convert' version '1.5.3'
@@ -33,6 +33,35 @@ scm {
 group 'com.intershop.gradle.publish'
 description 'Gradle publish plugins'
 version = scm.version.version
+
+gradlePlugin {
+    plugins {
+        simpleartifactorypublishPlugin {
+            id = 'com.intershop.gradle.simpleartifactorypublish-configuration'
+            implementationClass = 'com.intershop.gradle.artifactorypublish.SimpleArtifactoryPublishConfigurationPlugin'
+        }
+        artifactorypublishPlugin {
+            id = 'com.intershop.gradle.artifactorypublish-configuration'
+            implementationClass = 'com.intershop.gradle.artifactorypublish.ArtifactoryPublishConfigurationPlugin'
+        }
+        simplepublishPlugin {
+            id = 'com.intershop.gradle.simplepublish-configuration'
+            implementationClass = 'com.intershop.gradle.simplepublish.PublishConfigurationPlugin'
+        }
+        escrowPlugin {
+            id = 'com.intershop.gradle.escrow-plugin'
+            implementationClass = 'com.intershop.gradle.escrow.EscrowPlugin'
+        }
+        javadocPlugin {
+            id = 'com.intershop.gradle.javadoc-plugin'
+            implementationClass = 'com.intershop.gradle.javadoc.JavaDocPlugin'
+        }
+        javasourcePlugin {
+            id = 'com.intershop.gradle.javasource-plugin'
+            implementationClass = 'com.intershop.gradle.javasource.JavaSourcePlugin'
+        }
+    }
+}
 
 // plugins should work with JDK 1.7 aslong
 // older INTERSHOP version use this version of JDK
@@ -195,39 +224,40 @@ pluginBundle {
 
     plugins {
         escrowPlugin {
-            id = 'com.intershop.gradle.escrow-plugin'
+            id = gradlePlugin.plugins.escrowPlugin.id
             displayName = 'Plugin for escrow package creation'
         }
         javadocPlugin {
-            id = 'com.intershop.gradle.javadoc-plugin'
+            id = gradlePlugin.plugins.javadocPlugin.id
             displayName = 'Plugin with Intershop specific javadoc configuration'
         }
         javasourcePlugin {
-            id = 'com.intershop.gradle.javasource-plugin'
-            displayName = 'Plugin with Intershop specific javasource package configuration'
+            id = gradlePlugin.plugins.javasourcePlugin.id
+            displayName = 'Plugin with javasource package configuration'
         }
         simplepublishPlugin {
-            id = 'com.intershop.gradle.simplepublish-configuration'
+            id = gradlePlugin.plugins.simplepublishPlugin.id
             displayName = 'Plugin with simple publishing configuration'
         }
         artifactorypublishPlugin {
-            id = 'com.intershop.gradle.artifactorypublish-configuration'
+            id = gradlePlugin.plugins.artifactorypublishPlugin.id
             displayName = 'Plugin with Intershop specific publishing configuration with Artifactory'
         }
         simpleartifactorypublishPlugin {
-            id = 'com.intershop.gradle.simpleartifactorypublish-configuration'
+            id = gradlePlugin.plugins.simpleartifactorypublishPlugin.id
             displayName = 'Plugin with Intershop specific simple publishing configuration with Artifactory'
         }
     }
 }
 
 dependencies {
-    compile 'com.intershop.gradle.jiraconnector:jiraconnector-gradle-plugin:3.0.0'
-    compile 'com.intershop.gradle.repoconfig:repoconfig-gradle-plugin:4.0.0'
-    compile('org.jfrog.buildinfo:build-info-extractor-gradle:4.5.4') {
+    compile 'com.intershop.gradle.jiraconnector:jiraconnector-gradle-plugin:3.1.0'
+    compile 'com.intershop.gradle.repoconfig:repoconfig-gradle-plugin:4.2.0'
+
+    compile('org.jfrog.buildinfo:build-info-extractor-gradle:4.7.0') {
         exclude module: 'groovy-all'
     }
-    compile 'com.intershop.gradle.buildinfo:buildinfo-gradle-plugin:3.1.0'
+    compile 'com.intershop.gradle.buildinfo:buildinfo-gradle-plugin:3.2.0'
 
     testCompile 'com.intershop.gradle.test:test-gradle-plugin:3.0.0'
     testCompile gradleTestKit()

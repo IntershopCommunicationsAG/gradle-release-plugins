@@ -72,6 +72,7 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
 
             artifactory {
                 publish {
+                   
                     repository {
                         maven = false
                     }

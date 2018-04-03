@@ -15,18 +15,11 @@
  */
 package com.intershop.gradle.artifactorypublish
 
-import com.intershop.gradle.buildinfo.BuildInfoExtension
-import com.intershop.gradle.buildinfo.BuildInfoPlugin
 import com.intershop.gradle.jiraconnector.JiraConnectorPlugin
-import com.intershop.gradle.repoconfig.RepoConfigRegistry
 import groovy.transform.CompileDynamic
-import groovy.transform.CompileStatic
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.Task
-import org.jfrog.gradle.plugin.artifactory.ArtifactoryPlugin
-import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
 
 import static com.intershop.gradle.util.PluginHelper.*
 
