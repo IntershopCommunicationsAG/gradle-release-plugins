@@ -55,6 +55,7 @@ class SingleSimpleProjectSpec extends AbstractIntegrationSpec {
             artifactory {
                 publish {
                     repository {
+                        //repoKey = ''
                         maven = false
                     }
                     defaults {

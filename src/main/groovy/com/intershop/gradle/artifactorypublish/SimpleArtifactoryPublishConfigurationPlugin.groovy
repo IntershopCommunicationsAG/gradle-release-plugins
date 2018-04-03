@@ -80,6 +80,7 @@ class SimpleArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
                     contextUrl = repoBaseURL
                     publish {
                         repository {
+                            repoKey = ""
                             username = repoUserLogin
                             password = repoUserPassword
 

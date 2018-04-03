@@ -254,7 +254,7 @@ dependencies {
     compile 'com.intershop.gradle.jiraconnector:jiraconnector-gradle-plugin:3.1.0'
     compile 'com.intershop.gradle.repoconfig:repoconfig-gradle-plugin:4.2.0'
 
-    compile('org.jfrog.buildinfo:build-info-extractor-gradle:4.6.2') {
+    compile('org.jfrog.buildinfo:build-info-extractor-gradle:4.7.0') {
         exclude module: 'groovy-all'
     }
     compile 'com.intershop.gradle.buildinfo:buildinfo-gradle-plugin:3.2.0'
