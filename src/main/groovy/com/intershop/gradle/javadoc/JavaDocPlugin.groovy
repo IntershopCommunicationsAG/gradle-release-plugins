@@ -56,6 +56,10 @@ class JavaDocPlugin implements Plugin<Project> {
                         links("http://docs.oracle.com/javase/8/docs/api/")
                     }
 
+                    classpath = project.files(project.configurations.compile).filter {
+                        ! it.name.endsWith('-sources.jar') && ! it.name.endsWith('-javadoc.jar')
+                    }
+
                     doLast {
                         project.copy {
                             from logo
