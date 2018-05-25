@@ -43,7 +43,7 @@ class EscrowPlugin implements Plugin<Project> {
                 project.publishing {
                     if(! project.getVersion().toString().toLowerCase().endsWith('snapshot')) {
                         publications {
-                            ivy(IvyPublication) {
+                            ivyEscrow(IvyPublication) {
                                 organisation = pluginExtension.getSourceGroup()
                                 artifact(getConfigurePackageTask(project)) {
                                     classifier = pluginExtension.getClassifier()
@@ -58,7 +58,7 @@ class EscrowPlugin implements Plugin<Project> {
                 project.publishing {
                     if(! project.getVersion().toString().toLowerCase().endsWith('snapshot')) {
                         publications {
-                            mvn(MavenPublication) {
+                            mvnEscrow(MavenPublication) {
                                 groupId = pluginExtension.getSourceGroup()
                                 artifact(getConfigurePackageTask(project)) {
                                     classifier = pluginExtension.getClassifier()
