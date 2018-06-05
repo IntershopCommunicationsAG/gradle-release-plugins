@@ -118,8 +118,8 @@ class SimpleArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
                     clientConfig.publisher.addMatrixParam('scm.branch.name', infoExtension?.scmProvider.branchName?:'unknown')
                     clientConfig.publisher.addMatrixParam('scm.change.time', infoExtension?.scmProvider.lastChangeTime?:'unknown')
 
-                    clientConfig.publisher.addMatrixParam('project.version', infoExtension?.infoProvider.projectVersion)
-                    clientConfig.publisher.addMatrixParam('project.name', infoExtension?.infoProvider.rootProject)
+                    clientConfig.publisher.addMatrixParam('project.version', project.getVersion())
+                    clientConfig.publisher.addMatrixParam('project.name', project.getName())
                 }
                 project.rootProject.allprojects {
                     it.plugins.apply(ArtifactoryPlugin)
