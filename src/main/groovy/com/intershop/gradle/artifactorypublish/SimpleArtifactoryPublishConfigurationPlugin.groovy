@@ -95,6 +95,7 @@ class SimpleArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
                     String buildNumber = infoExtension.ciProvider.buildNumber?:'' + new Random(System.currentTimeMillis()).nextInt(20000)
                     String buildTimeStamp = infoExtension.ciProvider.buildTime?:'' + (new Date()).toTimestamp()
                     String vcsRevision = infoExtension.scmProvider.SCMRevInfo?:'unknown'
+                    String vcsBranchName = infoExtension.scmProvider.branchName?:'unknown'
 
                     clientConfig.info.setBuildName(infoExtension.ciProvider.buildJob?:project.name)
                     clientConfig.info.setBuildNumber(buildNumber)
@@ -106,6 +107,7 @@ class SimpleArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
                     clientConfig.publisher.addMatrixParam('build.number', buildNumber)
                     clientConfig.publisher.addMatrixParam('vcs.revision', vcsRevision)
                     clientConfig.publisher.addMatrixParam('build.timestamp', buildTimeStamp)
+                    clientConfig.publisher.addMatrixParam('vcs.branchname', vcsBranchName)
 
                     clientConfig.publisher.addMatrixParam('build.java.version', infoExtension.infoProvider.javaVersion)
                     clientConfig.publisher.addMatrixParam('source.java.version', infoExtension.infoProvider.javaSourceCompatibility ?: infoExtension.infoProvider.javaVersion.split('_')[0])
@@ -117,8 +119,6 @@ class SimpleArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
                     clientConfig.publisher.addMatrixParam('scm.type', infoExtension?.scmProvider.SCMType?:'unknown')
                     clientConfig.publisher.addMatrixParam('scm.branch.name', infoExtension?.scmProvider.branchName?:'unknown')
                     clientConfig.publisher.addMatrixParam('scm.change.time', infoExtension?.scmProvider.lastChangeTime?:'unknown')
-
-                    clientConfig.publisher.addMatrixParam('project.version', project.getVersion())
                     clientConfig.publisher.addMatrixParam('project.name', project.getName())
                 }
                 project.rootProject.allprojects {
@@ -128,6 +128,7 @@ class SimpleArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
                 // configuration depends on version ... this is available after evaluation
                 project.rootProject.afterEvaluate {
                     artifactoryPluginConvention.clientConfig.publisher.repoKey = project.version.toString().endsWith('-SNAPSHOT') ? repoSnapshotKey : repoReleaseKey
+                    artifactoryPluginConvention.clientConfig.publisher.addMatrixParam('project.version', project.getVersion())
                 }
             }
         }
