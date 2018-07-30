@@ -19,7 +19,7 @@ package com.intershop.gradle.simplepublish
 
 import com.intershop.gradle.test.util.TestDispatcher
 import com.intershop.gradle.test.AbstractIntegrationSpec
-import com.squareup.okhttp.mockwebserver.MockWebServer
+import okhttp3.mockwebserver.MockWebServer
 import org.junit.Rule
 import spock.lang.Unroll
 

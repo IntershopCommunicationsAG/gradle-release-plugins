@@ -19,7 +19,7 @@ package com.intershop.gradle.artifactorypublish
 
 import com.intershop.gradle.test.AbstractIntegrationSpec
 import com.intershop.gradle.test.util.TestDispatcher
-import com.squareup.okhttp.mockwebserver.MockWebServer
+import okhttp3.mockwebserver.MockWebServer
 import org.junit.Rule
 import spock.lang.Unroll
 
@@ -32,7 +32,7 @@ class MultiProjectSimpleArtifactoryPublishSpec extends AbstractIntegrationSpec {
     String configToken = System.properties['configURLToken']
 
     static String pluginConfig = """
-                  id 'com.intershop.gradle.scmversion' version '3.2.0'
+                  id 'com.intershop.gradle.scmversion' version '3.6.0'
                   id 'com.intershop.gradle.simpleartifactorypublish-configuration'
     """.stripIndent()
 

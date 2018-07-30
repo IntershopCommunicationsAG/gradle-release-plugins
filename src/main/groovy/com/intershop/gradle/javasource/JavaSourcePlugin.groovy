@@ -61,6 +61,7 @@ class JavaSourcePlugin implements Plugin<Project> {
                         publications {
                             ivy(IvyPublication) {
                                 configurations {
+                                    create("default")
                                     create("sources", { extend "default"})
                                 }
                                 artifact(project.tasks.sourceJar) {
