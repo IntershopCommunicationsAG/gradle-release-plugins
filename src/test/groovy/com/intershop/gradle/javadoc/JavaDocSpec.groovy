@@ -185,7 +185,7 @@ class JavaDocSpec extends AbstractIntegrationSpec {
 
         when:
         def result = getPreparedGradleRunner()
-                .withArguments('clean', 'publish', '--stacktrace', '-i', '-PrunOnCI=true')
+                .withArguments('clean', 'publish', '--stacktrace', '-i', '-PrunOnCI=true', '-s')
                 .withGradleVersion(gradleVersion)
                 .build()
 

@@ -12,16 +12,16 @@ plugins {
     id 'maven-publish'
 
     // intershop version plugin
-    id 'com.intershop.gradle.scmversion' version '3.4.0'
+    id 'com.intershop.gradle.scmversion' version '3.6.0'
 
     // plugin for documentation
-    id 'org.asciidoctor.convert' version '1.5.3'
+    id 'org.asciidoctor.convert' version '1.5.8.1'
 
     // plugin for publishing to Gradle Portal
-    id 'com.gradle.plugin-publish' version '0.9.9'
+    id 'com.gradle.plugin-publish' version '0.9.10'
 
     // plugin for publishing to jcenter
-    id 'com.jfrog.bintray' version '1.8.0'
+    id 'com.jfrog.bintray' version '1.8.4'
 }
 
 scm {
@@ -75,7 +75,7 @@ if (project.version.endsWith('-SNAPSHOT')) {
 
 test {
     // Gradle versions for test
-    systemProperty 'intershop.gradle.versions', '4.3.1'
+    systemProperty 'intershop.gradle.versions', '4.4,4.9'
 }
 
 task copyAsciiDoc {
@@ -251,20 +251,20 @@ pluginBundle {
 }
 
 dependencies {
-    compile 'com.intershop.gradle.jiraconnector:jiraconnector-gradle-plugin:3.1.0'
-    compile 'com.intershop.gradle.repoconfig:repoconfig-gradle-plugin:4.2.0'
+    compile 'com.intershop.gradle.jiraconnector:jiraconnector-gradle-plugin:3.2.0'
+    compile 'com.intershop.gradle.repoconfig:repoconfig-gradle-plugin:4.2.1'
 
-    compile('org.jfrog.buildinfo:build-info-extractor-gradle:4.7.3') {
+    compile('org.jfrog.buildinfo:build-info-extractor-gradle:4.7.5') {
         exclude module: 'groovy-all'
     }
-    compile 'com.intershop.gradle.buildinfo:buildinfo-gradle-plugin:3.2.0'
+    compile 'com.intershop.gradle.buildinfo:buildinfo-gradle-plugin:3.3.1'
 
     testCompile 'com.intershop.gradle.test:test-gradle-plugin:3.0.0'
     testCompile gradleTestKit()
 
     // mock webserver
-    testCompile 'com.squareup.okhttp:okhttp:2.7.5'
-    testCompile 'com.squareup.okhttp:mockwebserver:2.7.5'
+    testCompile 'com.squareup.okhttp3:okhttp:3.11.0'
+    testCompile 'com.squareup.okhttp3:mockwebserver:3.11.0'
 }
 
 repositories {

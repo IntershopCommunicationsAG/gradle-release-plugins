@@ -90,6 +90,7 @@ class JavaDocPlugin implements Plugin<Project> {
                         publications {
                             ivy(IvyPublication) {
                                 configurations {
+                                    create("default")
                                     create("javadoc", { extend "default"})
                                 }
                                 artifact(project.tasks.javadocJar) {
