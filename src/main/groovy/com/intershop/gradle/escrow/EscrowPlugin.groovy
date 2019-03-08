@@ -39,29 +39,31 @@ class EscrowPlugin implements Plugin<Project> {
         pluginExtension = project.extensions.create(EscrowExtension.ESCROW_EXTENSION_NAME, EscrowExtension, project)
 
         if (pluginExtension.isRunOnCI() && pluginExtension.runOnCI) {
-            project.plugins.withType(IvyPublishPlugin) {
-                project.publishing {
-                    if(! project.getVersion().toString().toLowerCase().endsWith('snapshot')) {
-                        publications {
-                            ivyEscrow(IvyPublication) {
-                                organisation = pluginExtension.getSourceGroup()
-                                artifact(getConfigurePackageTask(project)) {
-                                    classifier = pluginExtension.getClassifier()
+            project.afterEvaluate {
+                project.plugins.withType(IvyPublishPlugin) {
+                    project.publishing {
+                        if (!project.getVersion().toString().toLowerCase().endsWith('snapshot')) {
+                            publications {
+                                ivyEscrow(IvyPublication) {
+                                    organisation = pluginExtension.getSourceGroup()
+                                    artifact(getConfigurePackageTask(project)) {
+                                        classifier = pluginExtension.getClassifier()
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
 
-            project.plugins.withType(MavenPublishPlugin) {
-                project.publishing {
-                    if(! project.getVersion().toString().toLowerCase().endsWith('snapshot')) {
-                        publications {
-                            mvnEscrow(MavenPublication) {
-                                groupId = pluginExtension.getSourceGroup()
-                                artifact(getConfigurePackageTask(project)) {
-                                    classifier = pluginExtension.getClassifier()
+                project.plugins.withType(MavenPublishPlugin) {
+                    project.publishing {
+                        if (!project.getVersion().toString().toLowerCase().endsWith('snapshot')) {
+                            publications {
+                                mvnEscrow(MavenPublication) {
+                                    groupId = pluginExtension.getSourceGroup()
+                                    artifact(getConfigurePackageTask(project)) {
+                                        classifier = pluginExtension.getClassifier()
+                                    }
                                 }
                             }
                         }

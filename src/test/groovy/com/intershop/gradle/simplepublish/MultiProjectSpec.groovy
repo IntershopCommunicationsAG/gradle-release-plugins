@@ -31,35 +31,12 @@ class MultiProjectSpec extends AbstractIntegrationSpec {
     @Rule
     public final MockWebServer server = new MockWebServer()
 
-    private static String buildFileContentBase = """
-                                          plugins {
-                                              id 'java'
-                                              id 'ivy-publish'
-                                          }
-                                          sourceCompatibility = 1.7
-                                          targetCompatibility = 1.7
-
-                                          group = 'com.intershop.project'
-                                          version = 'VERSION'
-
-                                          if(project.hasProperty("releaseWithJavaDoc") && project.ext.releaseWithJavaDoc.toBoolean()) {
-                                            println 'CREATE JAVADOC'
-                                          }
-                                          publishing {
-                                            publications {
-                                                ivy(IvyPublication) {
-                                                    from components.java
-                                                }
-                                            }
-                                          }
-                                          """.stripIndent()
-
     private static String buildFileContentBaseDouble = """
                                           plugins {
                                               id 'java'
                                               id 'ivy-publish'
+                                              id 'com.intershop.gradle.simplepublish-configuration'
                                           }
-                                          apply plugin: 'com.intershop.gradle.simplepublish-configuration'
 
                                           sourceCompatibility = 1.7
                                           targetCompatibility = 1.7
@@ -128,7 +105,7 @@ class MultiProjectSpec extends AbstractIntegrationSpec {
         upLoadListCheck
 
         where:
-        buildFileContent << [buildFileContentBase, buildFileContentBaseDouble]
+        buildFileContent << [buildFileContentBaseDouble]
     }
 
     def 'test snapshot publishing'() {
@@ -167,7 +144,7 @@ class MultiProjectSpec extends AbstractIntegrationSpec {
 
         when:
         def result = getPreparedGradleRunner()
-                .withArguments('publish', "-DRUNONCI=true", "-PsnapshotURL=${urlStr}nexus/snapshots", "-PreleaseURL=${urlStr}nexus/releases", '-PrepoUserName=admin', '-PrepoUserPasswd=admin123', '-s')
+                .withArguments('publish', "-DRUNONCI=true", "-PsnapshotURL=${urlStr}nexus/snapshots", "-PreleaseURL=${urlStr}nexus/releases", '-PrepoUserName=admin', '-PrepoUserPasswd=admin123', '-s', '-i')
                 .build()
 
         boolean upLoadListCheck = true
@@ -183,7 +160,7 @@ class MultiProjectSpec extends AbstractIntegrationSpec {
         upLoadListCheck
 
         where:
-        buildFileContent << [buildFileContentBase, buildFileContentBaseDouble]
+        buildFileContent << [buildFileContentBaseDouble]
     }
 
     /**

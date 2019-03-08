@@ -85,7 +85,7 @@ class EscrowPluginSpec extends AbstractIntegrationSpec {
 
         when:
         def result = getPreparedGradleRunner()
-                .withArguments('publish', '-PrunOnCI=true', '--stacktrace', '-i')
+                .withArguments('publish', '-PrunOnCI=true', '--stacktrace', '-i', '-s')
                 .build()
 
         File fZip = new File(testProjectDir, 'build/repo/com.intershop.source/testProject/1.0.0/testProject-1.0.0-src.zip')
