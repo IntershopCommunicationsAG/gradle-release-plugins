@@ -74,7 +74,7 @@ class SimpleArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
 
             if(repoBaseURL && repoUserLogin && repoUserPassword && repoReleaseKey && repoSnapshotKey) {
                 ArtifactoryPluginConvention artifactoryPluginConvention = project.rootProject.convention.getPlugin(ArtifactoryPluginConvention)
-                BuildInfoExtension infoExtension = project.extensions.findByType(BuildInfoExtension)
+                BuildInfoExtension infoExtension = project.rootProject.extensions.findByType(BuildInfoExtension)
 
                 project.artifactory {
                     contextUrl = repoBaseURL

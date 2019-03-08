@@ -12,7 +12,7 @@ plugins {
     id 'maven-publish'
 
     // intershop version plugin
-    id 'com.intershop.gradle.scmversion' version '3.6.0'
+    id 'com.intershop.gradle.scmversion' version '4.1.1'
 
     // plugin for documentation
     id 'org.asciidoctor.convert' version '1.5.8.1'
@@ -75,7 +75,7 @@ if (project.version.endsWith('-SNAPSHOT')) {
 
 test {
     // Gradle versions for test
-    systemProperty 'intershop.gradle.versions', '4.4,4.9'
+    systemProperty 'intershop.gradle.versions', '5.2'
 }
 
 task copyAsciiDoc {
@@ -251,13 +251,13 @@ pluginBundle {
 }
 
 dependencies {
-    compile 'com.intershop.gradle.jiraconnector:jiraconnector-gradle-plugin:3.2.0'
+    compile 'com.intershop.gradle.jiraconnector:jiraconnector-gradle-plugin:3.2.1'
     compile 'com.intershop.gradle.repoconfig:repoconfig-gradle-plugin:4.2.1'
 
-    compile('org.jfrog.buildinfo:build-info-extractor-gradle:4.7.5') {
+    compile('org.jfrog.buildinfo:build-info-extractor-gradle:4.9.3') {
         exclude module: 'groovy-all'
     }
-    compile 'com.intershop.gradle.buildinfo:buildinfo-gradle-plugin:3.3.1'
+    compile 'com.intershop.gradle.buildinfo:buildinfo-gradle-plugin:4.0.0'
 
     testCompile 'com.intershop.gradle.test:test-gradle-plugin:3.0.0'
     testCompile gradleTestKit()

@@ -69,7 +69,6 @@ class ArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
         // apply SimpleArtifactoryPublishConfigurationPlugin
         project.rootProject.plugins.apply(SimpleArtifactoryPublishConfigurationPlugin)
 
-
         //Configuration will be applied only if runOnCI is true
         String runOnCI = getVariable(project, RUNONCI_ENV, RUNONCI_PRJ, 'false')
         project.logger.debug('Publishing Configuration: RunOnCI: {}', runOnCI.toBoolean())

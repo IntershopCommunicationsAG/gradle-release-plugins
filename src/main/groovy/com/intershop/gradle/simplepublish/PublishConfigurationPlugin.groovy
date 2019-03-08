@@ -78,24 +78,17 @@ class PublishConfigurationPlugin  implements Plugin<Project> {
 
             String snapshotRelease = getVariable(project, SNAPSHOT_RELEASE_ENV, SNAPSHOT_RELEASE_PRJ, 'false')
 
-            if(repoSnapshotURL != '') {
-                if(project == project.rootProject) {
-                        project.subprojects.each {
-                            applySnapshotPublishing(it, repoSnapshotURL, repoUserLogin, repoUserPassword, snapshotRelease.toLowerCase() == 'true')
-                        }
-
-                }
-                applySnapshotPublishing(project, repoSnapshotURL, repoUserLogin, repoUserPassword, snapshotRelease.toLowerCase() == 'true')
-            }
-            if(repoReleaseURL) {
-                if(project == project.rootProject) {
+            project.afterEvaluate {
+                if (repoSnapshotURL != '') {
                     project.subprojects.each {
-                        applyReleasePublishing(it, repoReleaseURL, repoUserLogin, repoUserPassword)
+                        applySnapshotPublishing(it, repoSnapshotURL, repoUserLogin, repoUserPassword, snapshotRelease.toLowerCase() == 'true')
                     }
+                    applySnapshotPublishing(project, repoSnapshotURL, repoUserLogin, repoUserPassword, snapshotRelease.toLowerCase() == 'true')
                 }
-                applyReleasePublishing(project, repoReleaseURL, repoUserLogin, repoUserPassword)
+                if (repoReleaseURL != '') {
+                    applyReleasePublishing(project, repoReleaseURL, repoUserLogin, repoUserPassword)
+                }
             }
-
             project.rootProject.afterEvaluate {
                 if(snapshotRelease.toLowerCase() == 'true') {
                     project.version = "$project.version-SNAPSHOT"
