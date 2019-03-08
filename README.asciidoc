@@ -1,6 +1,8 @@
 = Gradle Release Plugins for Intershop
 :latestRevision: 5.0.0
 
+NOTE: Version 5 of this plugin will only work with Gradle 5 and JDK 8!
+
 == Summary
 This collection of plugins adds special release functionality and encapsulates specific configurations and task dependencies.
 It includes plugins for the creation of an escrow package, for the configuration of JavaDoc and the configuration of publishing.
