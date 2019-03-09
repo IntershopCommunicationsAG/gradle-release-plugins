@@ -257,7 +257,7 @@ dependencies {
     compile('org.jfrog.buildinfo:build-info-extractor-gradle:4.9.3') {
         exclude module: 'groovy-all'
     }
-    compile 'com.intershop.gradle.buildinfo:buildinfo-gradle-plugin:4.0.0'
+    compile 'com.intershop.gradle.buildinfo:buildinfo-gradle-plugin:4.0.1'
 
     testCompile 'com.intershop.gradle.test:test-gradle-plugin:3.0.0'
     testCompile gradleTestKit()
