@@ -34,17 +34,20 @@ class TestDispatcher {
                 String path = request.getPath()
                 String userAgent = request.headers.get('User-Agent')
 
-                if(userAgent && userAgent.contains('ArtifactoryBuildClient')) {
+                if(line.startsWith('GET /nexus/')) {
+                    MockResponse response = null
+                    response = new MockResponse()
+                            .addHeader("Content-Type", "application/xml")
+                            .setBody('<?xml version="1.0" encoding="UTF-8"?><metadata modelVersion="1.1.0"><groupId>com.intershop.project</groupId>' +
+                                    '<artifactId>project2b</artifactId><version>1.0.0</version><versioning><latest>1.0.0</latest><release>1.0.0</release><versions>' +
+                                    '<version>1.0.0</version></versions><lastUpdated>20191105123934</lastUpdated></versioning></metadata>')
+                    return response
+                }
+
+                if(userAgent && userAgent.contains('ArtifactoryBuildClient') || line.startsWith('PUT /nexus/releases/com/')) {
                     MockResponse artifactoryResponse = null
 
-                    println "---------------------------"
-                    println request.toString()
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream()
-                    request.body.buffer().copyTo(baos)
-                    println baos.toString()
-                    println "---------------------------"
-
-                    if (path.startsWith('/releases') && path.contains('jar')) {
+                    if ((path.startsWith('/releases') || path.startsWith('/nexus/releases') ) && path.contains('jar')) {
                         uploadlist.add(path)
                         if(path.contains('1a')) {
                             artifactoryResponse = new MockResponse()
@@ -79,43 +82,22 @@ class TestDispatcher {
                         }
                         return artifactoryResponse
                     }
-                    if (path.startsWith('/releases') && (path.contains('ivy') || path.contains('pom'))) {
+                    if ((path.startsWith('/releases') || path.startsWith('/nexus/releases') ) && path.contains('pom')) {
                         uploadlist.add(path)
-                        if(path.contains('1a')) {
+
+                        if(path.contains('com/intershop')) {
                             artifactoryResponse = new MockResponse()
                                     .addHeader("Content-Type", "application/vnd.org.jfrog.artifactory.storage.ItemCreated+json;charset=ISO-8859-1")
                                     .addHeader("X-Artifactory-Id", "c2ba7b5d6d0ce49c:-6509cd21:157dd63986a:-8000")
-                                    .addHeader("Location", "http://localhost:80/releases/com.intershop.testproject/project1a/1.0.0/ivys/ivy-1.0.0.xml")
+                                    .addHeader("Location", "http://localhost:80/artifactory/releases/com/intershop/testProject/1.1.0/testProject-1.1.0.pom")
                                     .addHeader("Cache-Control", "no-cache")
-                                    .setBody(getResponse('artifactoryReleaseIvy1a.response'))
-                        } else if(path.contains('2b')) {
-                            artifactoryResponse = new MockResponse()
-                                    .addHeader("Content-Type", "application/vnd.org.jfrog.artifactory.storage.ItemCreated+json;charset=ISO-8859-1")
-                                    .addHeader("X-Artifactory-Id", "c2ba7b5d6d0ce49c:-6509cd21:157dd63986a:-8000")
-                                    .addHeader("Location", "http://localhost:80/releases/com.intershop.testproject/project2b/1.0.0/ivys/ivy-1.0.0.xml")
-                                    .addHeader("Cache-Control", "no-cache")
-                                    .setBody(getResponse('artifactoryReleaseIvy2b.response'))
-                        } else {
-                            if(path.contains('com.intershop')) {
-                                artifactoryResponse = new MockResponse()
-                                        .addHeader("Content-Type", "application/vnd.org.jfrog.artifactory.storage.ItemCreated+json;charset=ISO-8859-1")
-                                        .addHeader("X-Artifactory-Id", "c2ba7b5d6d0ce49c:-6509cd21:157dd63986a:-8000")
-                                        .addHeader("Location", "http://localhost:80/releases/com.intershop/testProject/1.1.0/ivys/ivy-1.1.0.xml")
-                                        .addHeader("Cache-Control", "no-cache")
-                                        .setBody(getResponse('artifactoryReleaseIvy.response'))
-                            } else if(path.contains('com/intershop')) {
-                                artifactoryResponse = new MockResponse()
-                                        .addHeader("Content-Type", "application/vnd.org.jfrog.artifactory.storage.ItemCreated+json;charset=ISO-8859-1")
-                                        .addHeader("X-Artifactory-Id", "c2ba7b5d6d0ce49c:-6509cd21:157dd63986a:-8000")
-                                        .addHeader("Location", "http://localhost:80/artifactory/releases/com/intershop/testProject/1.1.0/testProject-1.1.0.pom")
-                                        .addHeader("Cache-Control", "no-cache")
-                                        .setBody(getResponse('artifactoryReleasePomMaven.response'))
-                            }
+                                    .setBody(getResponse('artifactoryReleasePomMaven.response'))
                         }
                         return artifactoryResponse
                     }
-                    if (path.startsWith('/snapshots') && path.contains('jars')) {
+                    if ((path.startsWith('/snapshots') || path.startsWith('/nexus/snapshots') && (path.contains('pom') || path.contains('jar')))) {
                         uploadlist.add(path)
+
                         if(path.contains('1a')) {
                             artifactoryResponse = new MockResponse()
                                     .addHeader("Content-Type", "application/vnd.org.jfrog.artifactory.storage.ItemCreated+json;charset=ISO-8859-1")
@@ -140,32 +122,7 @@ class TestDispatcher {
                         }
                         return artifactoryResponse
                     }
-                    if (path.startsWith('/snapshots') && path.contains('ivys')) {
-                        uploadlist.add(path)
-                        if(path.contains('1a')) {
-                            artifactoryResponse = new MockResponse()
-                                    .addHeader("Content-Type", "application/vnd.org.jfrog.artifactory.storage.ItemCreated+json;charset=ISO-8859-1")
-                                    .addHeader("X-Artifactory-Id", "c2ba7b5d6d0ce49c:-6509cd21:157dd63986a:-8000")
-                                    .addHeader("Location", "http://localhost:80/snapshots/com.intershop.testproject/project1a/1.0.0-SNAPSHOT/ivys/ivy-1.0.0-SNAPSHOT.xml")
-                                    .addHeader("Cache-Control", "no-cache")
-                                    .setBody(getResponse('artifactorySnapshotIvy1a.response'))
-                        } else if(path.contains('2b')) {
-                            artifactoryResponse = new MockResponse()
-                                    .addHeader("Content-Type", "application/vnd.org.jfrog.artifactory.storage.ItemCreated+json;charset=ISO-8859-1")
-                                    .addHeader("X-Artifactory-Id", "c2ba7b5d6d0ce49c:-6509cd21:157dd63986a:-8000")
-                                    .addHeader("Location", "http://localhost:80/snapshots/com.intershop.testproject/project2b/1.0.0-SNAPSHOT/ivys/ivy-1.0.0-SNAPSHOT.xml")
-                                    .addHeader("Cache-Control", "no-cache")
-                                    .setBody(getResponse('artifactorySnapshotIvy2b.response'))
-                        } else {
-                            artifactoryResponse = new MockResponse()
-                                    .addHeader("Content-Type", "application/vnd.org.jfrog.artifactory.storage.ItemCreated+json;charset=ISO-8859-1")
-                                    .addHeader("X-Artifactory-Id", "c2ba7b5d6d0ce49c:-6509cd21:157dd63986a:-8000")
-                                    .addHeader("Location", "http://localhost:80/snapshots/com.intershop/testProject/1.0.0-SNAPSHOT/ivys/ivy-1.0.0-SNAPSHOT.xml")
-                                    .addHeader("Cache-Control", "no-cache")
-                                    .setBody(getResponse('artifactorySnapshotIvy.response'))
-                        }
-                        return artifactoryResponse
-                    }
+
                     if (path.startsWith('/api/system/version')) {
                         artifactoryResponse = new MockResponse()
                                 .addHeader("Content-Type", "application/vnd.org.jfrog.artifactory.system.Version+json")
@@ -183,27 +140,7 @@ class TestDispatcher {
                         return artifactoryResponse
                     }
                 }
-                if(path.startsWith('/nexus/service/local/staging/profile_evaluate')) {
-                    MockResponse nexus_response = new MockResponse()
-                            .addHeader("Content-Type", "application/json; charset=utf-8")
-                            .addHeader("Cache-Control", "no-cache")
-                            .setBody(getResponse('profile_evaluate.response'))
-                    return nexus_response
-                }
-                if(path.startsWith('/nexus/service/local/staging/profile_repositories/19124894924ac')) {
-                    MockResponse nexus_response = new MockResponse()
-                            .addHeader("Content-Type", "application/json; charset=utf-8")
-                            .addHeader("Cache-Control", "no-cache")
-                            .setBody(getResponse('profile_repositories.response'))
-                    return nexus_response
-                }
-                if(path.startsWith('/nexus/service/local/staging/bulk/close')){
-                    MockResponse close_response = new MockResponse()
-                            .addHeader("Content-Type", "application/json; charset=utf-8")
-                            .addHeader("Cache-Control", "no-cache")
 
-                    return close_response
-                }
                 if(path.startsWith('/nexus')) {
                     uploadlist.add(path)
                 }

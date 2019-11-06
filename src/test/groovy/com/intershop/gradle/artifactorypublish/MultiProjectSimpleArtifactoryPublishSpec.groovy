@@ -17,7 +17,7 @@
 
 package com.intershop.gradle.artifactorypublish
 
-import com.intershop.gradle.test.AbstractIntegrationSpec
+import com.intershop.gradle.test.AbstractIntegrationGroovySpec
 import com.intershop.gradle.test.util.TestDispatcher
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.Rule
@@ -26,7 +26,7 @@ import spock.lang.Unroll
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 
 @Unroll
-class MultiProjectSimpleArtifactoryPublishSpec extends AbstractIntegrationSpec {
+class MultiProjectSimpleArtifactoryPublishSpec extends AbstractIntegrationGroovySpec {
 
     String configURL = System.properties['configURL']
     String configToken = System.properties['configURLToken']
@@ -39,24 +39,9 @@ class MultiProjectSimpleArtifactoryPublishSpec extends AbstractIntegrationSpec {
     private static String buildFileContentBase = """
                                           plugins {
                                                 id 'java'
-                                                id 'ivy-publish'
-                                            }
-
-                                            publishing {
-                                                publications {
-                                                    ivy(IvyPublication) {
-                                                        from components.java
-                                                    }
-                                                }
-                                            }
-                                          """.stripIndent()
-
-    private static String mavenBuildFileContentBase = """
-                                          plugins {
-                                                id 'java'
                                                 id 'maven-publish'
                                             }
-                                            
+
                                             publishing {
                                                 publications {
                                                     maven(MavenPublication) {
@@ -82,7 +67,7 @@ class MultiProjectSimpleArtifactoryPublishSpec extends AbstractIntegrationSpec {
 
         buildFile << """
                 plugins {
-                  id 'ivy-publish'
+                  id 'maven-publish'
                   ${pluginConfig}
                 }
 
@@ -91,11 +76,8 @@ class MultiProjectSimpleArtifactoryPublishSpec extends AbstractIntegrationSpec {
 
                 artifactory {
                     publish {
-                        repository {
-                            maven = false
-                        }
                         defaults {
-                            publications('ivy')
+                            publications('maven')
                             properties = ['testBla': 'testBla']
                         }
                     }
@@ -107,13 +89,12 @@ class MultiProjectSimpleArtifactoryPublishSpec extends AbstractIntegrationSpec {
                 }
         """.stripIndent()
 
-        File settingsfile = file('settings.gradle')
-        settingsfile << """
+        settingsFile << """
             // define root proejct name
             rootProject.name = 'p_testProject'
         """.stripIndent()
-        createSubProjectJava('project1a', settingsfile, 'com.intereshop.a', buildFileContent, '1.0.0')
-        createSubProjectJava('project2b', settingsfile, 'com.intereshop.b', buildFileContent, '1.0.0')
+        createSubProjectJava('project1a', 'com.intereshop.a', buildFileContent, '1.0.0')
+        createSubProjectJava('project2b', 'com.intereshop.b', buildFileContent, '1.0.0')
 
         when:
         def result = getPreparedGradleRunner()
@@ -122,7 +103,7 @@ class MultiProjectSimpleArtifactoryPublishSpec extends AbstractIntegrationSpec {
 
         boolean upLoadListCheck = true
         upLoadList.each {
-            upLoadListCheck &= it.contains('releases/com.intershop.testproject/')
+            upLoadListCheck &= it.contains('releases/com/intershop/testproject/')
         }
 
         then:
@@ -166,13 +147,12 @@ class MultiProjectSimpleArtifactoryPublishSpec extends AbstractIntegrationSpec {
                 }
         """.stripIndent()
 
-        File settingsfile = file('settings.gradle')
-        settingsfile << """
+        settingsFile << """
             // define root proejct name
             rootProject.name = 'p_testProject'
         """.stripIndent()
-        createSubProjectJava('project1a', settingsfile, 'com.intereshop.a', buildFileContent, '1.0.0')
-        createSubProjectJava('project2b', settingsfile, 'com.intereshop.b', buildFileContent, '1.0.0')
+        createSubProjectJava('project1a', 'com.intereshop.a', buildFileContent, '1.0.0')
+        createSubProjectJava('project2b', 'com.intereshop.b', buildFileContent, '1.0.0')
 
         when:
         def result = getPreparedGradleRunner()
@@ -190,7 +170,7 @@ class MultiProjectSimpleArtifactoryPublishSpec extends AbstractIntegrationSpec {
         upLoadList.size() == 4
 
         where:
-        buildFileContent << [mavenBuildFileContentBase]
+        buildFileContent << [buildFileContentBase]
     }
 
     def 'test publishing without artifactory'() {
@@ -203,7 +183,7 @@ class MultiProjectSimpleArtifactoryPublishSpec extends AbstractIntegrationSpec {
 
         buildFile << """
                 plugins {
-                  id 'ivy-publish'
+                  id 'maven-publish'
                   ${pluginConfig}
                 }
 
@@ -212,11 +192,8 @@ class MultiProjectSimpleArtifactoryPublishSpec extends AbstractIntegrationSpec {
 
                 artifactory {
                     publish {
-                        repository {
-                            maven = false
-                        }
                         defaults {
-                            publications('ivy')
+                            publications('maven')
                         }
                     }
                 }
@@ -227,13 +204,12 @@ class MultiProjectSimpleArtifactoryPublishSpec extends AbstractIntegrationSpec {
                 }
         """.stripIndent()
 
-        File settingsfile = file('settings.gradle')
-        settingsfile << """
+        settingsFile << """
             // define root proejct name
             rootProject.name = 'p_testProject'
         """.stripIndent()
-        createSubProjectJava('project1a', settingsfile, 'com.intereshop.a', buildFileContent, '1.0.0')
-        createSubProjectJava('project2b', settingsfile, 'com.intereshop.b', buildFileContent, '1.0.0')
+        createSubProjectJava('project1a', 'com.intereshop.a', buildFileContent, '1.0.0')
+        createSubProjectJava('project2b', 'com.intereshop.b', buildFileContent, '1.0.0')
 
         when:
         def result = getPreparedGradleRunner()
@@ -242,7 +218,7 @@ class MultiProjectSimpleArtifactoryPublishSpec extends AbstractIntegrationSpec {
 
         boolean upLoadListCheck = true
         upLoadList.each {
-            upLoadListCheck &= it.contains('releases/com.intershop.testproject/')
+            upLoadListCheck &= it.contains('releases/com/intershop/testproject/')
         }
 
         then:
@@ -264,7 +240,7 @@ class MultiProjectSimpleArtifactoryPublishSpec extends AbstractIntegrationSpec {
 
         buildFile << """
                 plugins {
-                  id 'ivy-publish'
+                  id 'maven-publish'
                   ${pluginConfig}
                 }
 
@@ -273,11 +249,8 @@ class MultiProjectSimpleArtifactoryPublishSpec extends AbstractIntegrationSpec {
 
                 artifactory {
                     publish {
-                        repository {
-                            maven = false
-                        }
                         defaults {
-                            publications('ivy')
+                            publications('maven')
                         }
                     }
                 }
@@ -288,13 +261,12 @@ class MultiProjectSimpleArtifactoryPublishSpec extends AbstractIntegrationSpec {
                 }
         """.stripIndent()
 
-        File settingsfile = file('settings.gradle')
-        settingsfile << """
+        settingsFile << """
             // define root proejct name
             rootProject.name = 'p_testProject'
         """.stripIndent()
-        createSubProjectJava('project1a', settingsfile, 'com.intereshop.a', buildFileContent, '1.0.0-SNAPSHOT')
-        createSubProjectJava('project2b', settingsfile, 'com.intereshop.b', buildFileContent, '1.0.0-SNAPSHOT')
+        createSubProjectJava('project1a', 'com.intereshop.a', buildFileContent, '1.0.0-SNAPSHOT')
+        createSubProjectJava('project2b', 'com.intereshop.b', buildFileContent, '1.0.0-SNAPSHOT')
 
         when:
         def result = getPreparedGradleRunner()
@@ -303,11 +275,10 @@ class MultiProjectSimpleArtifactoryPublishSpec extends AbstractIntegrationSpec {
 
         boolean upLoadListCheck = true
         upLoadList.each {
-            upLoadListCheck &= it.contains('snapshots/com.intershop.testproject/')
+            upLoadListCheck &= it.contains('snapshots/com/intershop/testproject/')
         }
 
         then:
-        ! result.output.contains('CREATE JAVADOC')
         result.task(':artifactoryPublish').outcome == SUCCESS
         upLoadListCheck
         upLoadList.size() == 4
@@ -321,8 +292,8 @@ class MultiProjectSimpleArtifactoryPublishSpec extends AbstractIntegrationSpec {
     /**
      * Creates a java sub project
      */
-    private File createSubProjectJava(String projectPath, File settingsGradle, String packageName, String buildContent, String version){
-        File subProject = createSubProject(projectPath, settingsGradle, buildContent.replace('VERSION', version))
+    private File createSubProjectJava(String projectPath, String packageName, String buildContent, String version){
+        File subProject = createSubProject(projectPath, buildContent.replace('VERSION', version))
         writeJavaTestClass(packageName, subProject)
         return subProject
     }

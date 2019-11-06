@@ -37,14 +37,6 @@ class EscrowExtension {
     EscrowExtension(Project project) {
         this.project = project
 
-        // init default value for runOnCI
-        if(! runOnCI) {
-            runOnCI = Boolean.parseBoolean(getVariable(project, RUNONCI_ENV, RUNONCI_PRJ, 'false'))
-            if(runOnCI) {
-                log.warn('Escrow task will be executed on a CI build environment for {}.', project.name)
-            }
-        }
-
         String buildDirName = project.getBuildDir().getName().toString()
 
         excludesList = [ buildDirName, "*/${buildDirName}", '.gradle', '.svn', '.git', '.idea', '.eclipse', '.settings', '**/.settings/**']
@@ -83,12 +75,4 @@ class EscrowExtension {
         excludesList.clear()
         excludesList.addAll(excludes)
     }
-
-    /**
-     * <p>Configuration for the execution on the CI server</p>
-     *
-     * <p>Can be configured/overwritten with environment variable RUNONCI;
-     * java environment RUNONCI or project variable runOnCI</p>
-     */
-    boolean runOnCI
 }

@@ -57,26 +57,23 @@ class PublishConfigurationPlugin  implements Plugin<Project> {
     final static String SNAPSHOT_RELEASE_PRJ = 'snapshotRelease'
 
     // publication names
-    public final static String IVYREPONAME = 'intershopIvyCI'
     public final static String MVNREPOName = 'intershopMvnCI'
 
     void apply(Project project) {
-        String runOnCI = getVariable(project, RUNONCI_ENV, RUNONCI_PRJ, 'false')
-        project.logger.info('Publishing Configuration: RunOnCI: {}', runOnCI.toBoolean())
+        project.logger.info('Simple release publishing configuration will be applied to project {}', project.name)
 
-        //provide compatibility with the repo config plung
-        project.getExtensions().extraProperties.set('useSCMVersionConfig', 'true')
+        String repoUserLogin = getVariable(project, REPO_USER_NAME_ENV, REPO_USER_NAME_PRJ, '')
+        String repoUserPassword = getVariable(project, REPO_USER_PASSWD_ENV, REPO_USER_PASSWD_PRJ, '')
 
-        if (runOnCI.toBoolean()) {
-            project.logger.info('Simple release publishing configuration will be applied to project {}', project.name)
+        String repoReleaseURL = getVariable(project, RELEASE_URL_ENV, RELEASE_URL_PRJ, '')
+        String repoSnapshotURL = getVariable(project, SNAPSHOT_URL_ENV, SNAPSHOT_URL_PRJ, '')
 
-            String repoUserLogin = getVariable(project, REPO_USER_NAME_ENV, REPO_USER_NAME_PRJ, '')
-            String repoUserPassword = getVariable(project, REPO_USER_PASSWD_ENV, REPO_USER_PASSWD_PRJ, '')
+        String snapshotRelease = getVariable(project, SNAPSHOT_RELEASE_ENV, SNAPSHOT_RELEASE_PRJ, 'false')
 
-            String repoReleaseURL = getVariable(project, RELEASE_URL_ENV, RELEASE_URL_PRJ, '')
-            String repoSnapshotURL = getVariable(project, SNAPSHOT_URL_ENV, SNAPSHOT_URL_PRJ, '')
-
-            String snapshotRelease = getVariable(project, SNAPSHOT_RELEASE_ENV, SNAPSHOT_RELEASE_PRJ, 'false')
+        if(repoUserLogin != '' && repoUserPassword != '' && repoReleaseURL != '' && repoSnapshotURL != '') {
+            if (snapshotRelease.toLowerCase() == 'true') {
+                project.version = "$project.version-SNAPSHOT"
+            }
 
             project.afterEvaluate {
                 if (repoSnapshotURL != '') {
@@ -86,75 +83,23 @@ class PublishConfigurationPlugin  implements Plugin<Project> {
                     applySnapshotPublishing(project, repoSnapshotURL, repoUserLogin, repoUserPassword, snapshotRelease.toLowerCase() == 'true')
                 }
                 if (repoReleaseURL != '') {
+                    project.subprojects.each {
+                        applyReleasePublishing(project, repoReleaseURL, repoUserLogin, repoUserPassword)
+                    }
                     applyReleasePublishing(project, repoReleaseURL, repoUserLogin, repoUserPassword)
                 }
-            }
-            project.rootProject.afterEvaluate {
-                if(snapshotRelease.toLowerCase() == 'true') {
-                    project.version = "$project.version-SNAPSHOT"
-                }
-                if(! project.version.toString().endsWith('-SNAPSHOT')) {
-                    // add javadoc to root project
-                    project.getRootProject().getExtensions().extraProperties.set('releaseWithJavaDoc', 'true')
-                    // add javadoc to sub project
-                    project.getRootProject().getSubprojects().each { Project subp ->
-                        subp.getExtensions().extraProperties.set('releaseWithJavaDoc', 'true')
-                    }
-                }
-            }
-        } else {
-            project.rootProject.afterEvaluate {
-                project.logger.info('Project runs local! Local configuration will be set.')
-                project.status = 'local'
-                project.version = "$project.version-LOCAL"
             }
         }
     }
 
     @CompileDynamic
     private void applySnapshotPublishing(Project p, String snapshotURL, String repoUser, String repoUserPasswd, boolean useSnapShotRepo = false) {
-        p.plugins.withType(IvyPublishPlugin) {
-            p.publishing {
-                repositories {
-                    if (!delegate.findByName(IVYREPONAME) && (p.version.endsWith('-SNAPSHOT') || useSnapShotRepo)) {
-                        p.logger.info('Add Ivy publishing repository')
-                        ivy {
-                            name IVYREPONAME
-                            // Configuration for snapshots - publishing to repository
-                            url snapshotURL
-                            // only used for secured repositories
-                            if (repoUser && repoUserPasswd) {
-                                credentials {
-                                    username repoUser
-                                    password repoUserPasswd
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            p.repositories {
-                if (!delegate.findByName(IVYREPONAME) && (p.version.endsWith('-SNAPSHOT') || useSnapShotRepo)) {
-                    p.logger.info('Ivy repository {} added to the project repository configuration', IVYREPONAME)
-                    ivy {
-                        name IVYREPONAME
-                        url snapshotURL
-                        if (repoUser && repoUserPasswd) {
-                            credentials {
-                                username repoUser
-                                password repoUserPasswd
-                            }
-                        }
-                    }
-                }
-            }
-        }
         // the same configuration for maven publishing
         p.plugins.withType(MavenPublishPlugin) {
             p.publishing {
                 repositories {
                     if (!delegate.findByName(MVNREPOName) && (p.version.endsWith('-SNAPSHOT') || useSnapShotRepo)) {
-                        p.logger.info('Add Mvn publishing repository')
+                        p.logger.info('Mvn publishing repository added for {}', snapshotURL)
                         maven {
                             name MVNREPOName
                             url snapshotURL
@@ -164,22 +109,6 @@ class PublishConfigurationPlugin  implements Plugin<Project> {
                                     username repoUser
                                     password repoUserPasswd
                                 }
-                            }
-                        }
-                    }
-                }
-            }
-            p.repositories {
-                if (!delegate.findByName(MVNREPOName) && (p.version.endsWith('-SNAPSHOT') || useSnapShotRepo)) {
-                    p.logger.info('Mvn repository {} added to the project repository configuration', MVNREPOName)
-                    maven {
-                        name MVNREPOName
-                        url snapshotURL
-                        // only used for secured repositories
-                        if (repoUser && repoUserPasswd) {
-                            credentials {
-                                username repoUser
-                                password repoUserPasswd
                             }
                         }
                     }
@@ -190,47 +119,12 @@ class PublishConfigurationPlugin  implements Plugin<Project> {
 
     @CompileDynamic
     private void applyReleasePublishing(Project p, String releaseURL, String repoUser, String repoUserPasswd) {
-        p.plugins.withType(IvyPublishPlugin) {
-            p.publishing {
-                repositories {
-                    if (!delegate.findByName(IVYREPONAME)) {
-                        p.logger.info('Direct Ivy publishing repository added for {}', releaseURL)
-                        ivy {
-                            name IVYREPONAME
-                            url releaseURL
-                            if (repoUser && repoUserPasswd) {
-                                credentials {
-                                    username repoUser
-                                    password repoUserPasswd
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            p.repositories {
-                if (!delegate.findByName(IVYREPONAME)) {
-                    p.logger.info('Direct Ivy repository added for {}', releaseURL)
-                    ivy {
-                        name IVYREPONAME
-                        url releaseURL
-                        if (repoUser && repoUserPasswd) {
-                            credentials {
-                                username repoUser
-                                password repoUserPasswd
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
         // the same configuration for maven publishing
         p.plugins.withType(MavenPublishPlugin) {
             p.publishing {
                 repositories {
                     if (!delegate.findByName(MVNREPOName)) {
-                        p.logger.info('Direct Mvn publishing repository added for {}', releaseURL)
+                        p.logger.info('Mvn publishing repository added for {}', releaseURL)
                         maven {
                             name MVNREPOName
                             url releaseURL
@@ -239,20 +133,6 @@ class PublishConfigurationPlugin  implements Plugin<Project> {
                                     username repoUser
                                     password repoUserPasswd
                                 }
-                            }
-                        }
-                    }
-                }
-            }
-            p.repositories {
-                if (!delegate.findByName(MVNREPOName)) {
-                    maven {
-                        name MVNREPOName
-                        url releaseURL
-                        if (repoUser && repoUserPasswd) {
-                            credentials {
-                                username repoUser
-                                password repoUserPasswd
                             }
                         }
                     }
