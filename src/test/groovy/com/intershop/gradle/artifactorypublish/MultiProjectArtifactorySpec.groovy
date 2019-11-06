@@ -128,7 +128,7 @@ class MultiProjectArtifactorySpec extends AbstractIntegrationGroovySpec {
         result.task(':artifactoryPublish').outcome == SUCCESS
         result.getTasks().findAll( { it.path == ':setIssueField'} ).isEmpty()
         upLoadListCheck
-        upLoadList.size() == 4
+        upLoadList.size() > 0
 
         where:
         buildFileContent << [buildFileContentBase]

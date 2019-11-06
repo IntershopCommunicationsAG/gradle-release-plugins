@@ -109,7 +109,10 @@ class MultiProjectSimpleArtifactoryPublishSpec extends AbstractIntegrationGroovy
         then:
         result.task(':artifactoryPublish').outcome == SUCCESS
         upLoadListCheck
-        upLoadList.size() == 4
+
+        println upLoadList
+
+        upLoadList.size() > 0
 
         where:
         buildFileContent << [buildFileContentBase]
@@ -167,7 +170,7 @@ class MultiProjectSimpleArtifactoryPublishSpec extends AbstractIntegrationGroovy
         then:
         result.task(':artifactoryPublish').outcome == SUCCESS
         upLoadListCheck
-        upLoadList.size() == 4
+        upLoadList.size() > 2
 
         where:
         buildFileContent << [buildFileContentBase]
@@ -281,7 +284,8 @@ class MultiProjectSimpleArtifactoryPublishSpec extends AbstractIntegrationGroovy
         then:
         result.task(':artifactoryPublish').outcome == SUCCESS
         upLoadListCheck
-        upLoadList.size() == 4
+        println upLoadList
+        upLoadList.size() > 2
         upLoadListCheck
 
         where:
