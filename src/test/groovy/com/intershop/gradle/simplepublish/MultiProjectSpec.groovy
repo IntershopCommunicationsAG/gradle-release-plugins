@@ -18,7 +18,7 @@
 package com.intershop.gradle.simplepublish
 
 import com.intershop.gradle.test.util.TestDispatcher
-import com.intershop.gradle.test.AbstractIntegrationSpec
+import com.intershop.gradle.test.AbstractIntegrationGroovySpec
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.Rule
 import spock.lang.Unroll
@@ -26,7 +26,7 @@ import spock.lang.Unroll
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 
 @Unroll
-class MultiProjectSpec extends AbstractIntegrationSpec {
+class MultiProjectSpec extends AbstractIntegrationGroovySpec {
 
     @Rule
     public final MockWebServer server = new MockWebServer()
@@ -34,7 +34,7 @@ class MultiProjectSpec extends AbstractIntegrationSpec {
     private static String buildFileContentBaseDouble = """
                                           plugins {
                                               id 'java'
-                                              id 'ivy-publish'
+                                              id 'maven-publish'
                                               id 'com.intershop.gradle.simplepublish-configuration'
                                           }
 
@@ -50,7 +50,7 @@ class MultiProjectSpec extends AbstractIntegrationSpec {
 
                                           publishing {
                                             publications {
-                                                ivy(IvyPublication) {
+                                                mvn(MavenPublication) {
                                                     from components.java
                                                 }
                                             }
@@ -67,7 +67,7 @@ class MultiProjectSpec extends AbstractIntegrationSpec {
 
         buildFile << """
             plugins {
-                id 'ivy-publish'
+                id 'maven-publish'
                 id 'com.intershop.gradle.simplepublish-configuration'
             }
 
@@ -76,20 +76,20 @@ class MultiProjectSpec extends AbstractIntegrationSpec {
 
             publishing {
                 repositories {
-                    ivy {
+                    maven {
                         url "\${rootProject.buildDir}/repo"
                     }
                 }
             }
         """.stripIndent()
 
-        File settingsfile = file('settings.gradle')
-        settingsfile << """
+        settingsFile << """
             // define root proejct name
             rootProject.name = 'p_testProject'
         """.stripIndent()
-        createSubProjectJava('project1a', settingsfile, 'com.intereshop.a', buildFileContent, '1.0.0')
-        createSubProjectJava('project2b', settingsfile, 'com.intereshop.b', buildFileContent, '1.0.0')
+
+        createSubProjectJava('project1a', 'com.intereshop.a', buildFileContent, '1.0.0')
+        createSubProjectJava('project2b', 'com.intereshop.b', buildFileContent, '1.0.0')
 
         when:
         getPreparedGradleRunner()
@@ -118,7 +118,7 @@ class MultiProjectSpec extends AbstractIntegrationSpec {
 
         buildFile << """
             plugins {
-                id 'ivy-publish'
+                id 'maven-publish'
                 id 'com.intershop.gradle.simplepublish-configuration'
             }
 
@@ -127,20 +127,20 @@ class MultiProjectSpec extends AbstractIntegrationSpec {
 
             publishing {
                 repositories {
-                    ivy {
+                    maven {
                         url "\${rootProject.buildDir}/repo"
                     }
                 }
             }
         """.stripIndent()
 
-        File settingsfile = file('settings.gradle')
-        settingsfile << """
+        settingsFile << """
             // define root proejct name
             rootProject.name = 'p_testProject'
         """.stripIndent()
-        createSubProjectJava('project1a', settingsfile, 'com.intereshop.a', buildFileContent, '1.0.0-SNAPSHOT')
-        createSubProjectJava('project2b', settingsfile, 'com.intereshop.b', buildFileContent, '1.0.0-SNAPSHOT')
+
+        createSubProjectJava('project1a', 'com.intereshop.a', buildFileContent, '1.0.0-SNAPSHOT')
+        createSubProjectJava('project2b', 'com.intereshop.b', buildFileContent, '1.0.0-SNAPSHOT')
 
         when:
         def result = getPreparedGradleRunner()
@@ -154,8 +154,8 @@ class MultiProjectSpec extends AbstractIntegrationSpec {
 
         then:
         ! result.output.contains('CREATE JAVADOC')
-        result.task(':project1a:publishIvyPublicationToIntershopIvyCIRepository').outcome == SUCCESS
-        result.task(':project2b:publishIvyPublicationToIntershopIvyCIRepository').outcome == SUCCESS
+        result.task(':project1a:publishMvnPublicationToIntershopMvnCIRepository').outcome == SUCCESS
+        result.task(':project2b:publishMvnPublicationToIntershopMvnCIRepository').outcome == SUCCESS
         ! result.tasks.contains(':writeToJira')
         upLoadListCheck
 
@@ -166,8 +166,8 @@ class MultiProjectSpec extends AbstractIntegrationSpec {
     /**
      * Creates a java sub project
      */
-    private File createSubProjectJava(String projectPath, File settingsGradle, String packageName, String buildContent, String version){
-        File subProject = createSubProject(projectPath, settingsGradle, buildContent.replace('VERSION', version))
+    private File createSubProjectJava(String projectPath, String packageName, String buildContent, String version){
+        File subProject = createSubProject(projectPath, buildContent.replace('VERSION', version))
         writeJavaTestClass(packageName, subProject)
         return subProject
     }

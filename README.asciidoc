@@ -62,45 +62,6 @@ This list can be manipulated with the following methods:
 
 |===
 
-== Java Doc Plugin
-This plugin add a java doc package to all publications if the JavaBasePlugin is applied to the project.
-It provides also an Intershop specific configuration for the JavaDoc creation.
-
-=== Usage
-To use the Gradle plugin with the Intershop Javadoc configuration, include the following in your build script:
-
-[source,groovy,subs="attributes"]
-----
-plugins {
-    id 'com.intershop.gradle.javadoc-plugin' version '{latestRevision}'
-]
-----
-
-It must be applied to each subproject of a multi project.
-It changes the image and the used ccs of generated Javadoc files.
-
-== Java Source Plugin
-This plugin add a source package to all publications if the JavaBasePlugin is applied to the project.
-
-==== Usage
-To use the Gradle java source plugin. include the following in your build script:
-
-[source,groovy,subs="attributes"]
-----
-plugins {
-   id 'com.intershop.gradle.javasource-plugin' version '{latestRevision}'
-}
-----
-
-The source package will be only created and published if the property `runOnCI` is true.
-
-[cols="17%,17%,65%", width="95%", options="header"]
-|===
-| System variable or Java system property | Project property  | Description
-
-| *RUNONCI*          | *runOnCI*         | This configuration must be true, if the project is used on a CI server.
-|===
-
 == Simple Publish Configuration Plugin
 
 The configuration and the execution of tasks depends on the version number. Release versions without a "SNAPSHOT" extension will be published

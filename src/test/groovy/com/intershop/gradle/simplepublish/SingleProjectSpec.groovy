@@ -18,11 +18,11 @@
 package com.intershop.gradle.simplepublish
 
 import com.intershop.gradle.test.util.TestDispatcher
-import com.intershop.gradle.test.AbstractIntegrationSpec
+import com.intershop.gradle.test.AbstractIntegrationGroovySpec
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.Rule
 
-class SingleProjectSpec extends AbstractIntegrationSpec {
+class SingleProjectSpec extends AbstractIntegrationGroovySpec {
 
     @Rule
     public final MockWebServer server = new MockWebServer()
@@ -38,7 +38,7 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
         buildFile << """
             plugins {
                 id 'java'
-                id 'ivy-publish'
+                id 'maven-publish'
                 id 'com.intershop.gradle.simplepublish-configuration'
             }
 
@@ -47,7 +47,7 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
 
             publishing {
                 publications {
-                    ivy(IvyPublication) {
+                    maven(MavenPublication) {
                         from components.java
                     }
                 }
@@ -86,7 +86,7 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
         buildFile << """
             plugins {
                 id 'java'
-                id 'ivy-publish'
+                id 'maven-publish'
                 id 'com.intershop.gradle.simplepublish-configuration'
             }
 
@@ -95,7 +95,7 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
 
             publishing {
                 publications {
-                    ivy(IvyPublication) {
+                    maven(MavenPublication) {
                         from components.java
                     }
                 }
@@ -134,7 +134,7 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
         buildFile << """
             plugins {
                 id 'java'
-                id 'ivy-publish'
+                id 'maven-publish'
                 id 'com.intershop.gradle.simplepublish-configuration'
             }
 
@@ -143,7 +143,7 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
 
             publishing {
                 publications {
-                    ivy(IvyPublication) {
+                    maven(MavenPublication) {
                         from components.java
                     }
                 }
@@ -181,7 +181,7 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
         buildFile << """
             plugins {
                 id 'java'
-                id 'ivy-publish'
+                id 'maven-publish'
                 id 'com.intershop.gradle.simplepublish-configuration'
             }
 
@@ -190,13 +190,13 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
 
             publishing {
                 publications {
-                    ivy(IvyPublication) {
+                    mvn(MavenPublication) {
                         from components.java
                     }
                 }
 
                 repositories {
-                    ivy {
+                    maven {
                         url "\$buildDir/repo"
                     }
                 }
@@ -212,12 +212,12 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
 
         when:
         def result = getPreparedGradleRunner()
-                .withArguments('publish', "-PsnapshotURL=${urlStr}nexus/snapshots", "-PreleaseURL=${urlStr}nexus/releases", '-PrepoUserName=admin', '-PrepoUserPasswd=admin123', '-s')
+                .withArguments('publish', '-s')
                 .build()
 
         then:
-        (new File(testProjectDir, 'build/publications/ivy/ivy.xml')).text.contains('1.0.0-LOCAL')
-        (new File(testProjectDir, 'build/libs/p_testProject-1.0.0-LOCAL.jar')).exists()
+        (new File(testProjectDir, 'build/publications/mvn/pom-default.xml')).text.contains('1.0.0')
+        (new File(testProjectDir, 'build/libs/p_testProject-1.0.0.jar')).exists()
     }
 
 }

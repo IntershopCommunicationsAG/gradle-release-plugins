@@ -17,7 +17,7 @@
 
 package com.intershop.gradle.artifactorypublish
 
-import com.intershop.gradle.test.AbstractIntegrationSpec
+import com.intershop.gradle.test.AbstractIntegrationGroovySpec
 import com.intershop.gradle.test.util.TestDispatcher
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.Rule
@@ -25,11 +25,11 @@ import org.junit.Rule
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 import static org.gradle.testkit.runner.TaskOutcome.UP_TO_DATE
 
-class SingleProjectSpec extends AbstractIntegrationSpec {
+class SingleProjectSpec extends AbstractIntegrationGroovySpec {
 
     static String issueKey = 'ISTOOLS-993'
     static String pluginConfig = """
-                  id 'com.intershop.gradle.scmversion' version '3.6.0'
+                  id 'com.intershop.gradle.scmversion' version '5.0.0'
                   id 'com.intershop.gradle.artifactorypublish-configuration'
     """.stripIndent()
 
@@ -63,7 +63,7 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
         buildFile << """
             plugins {
                 id 'java'
-                id 'ivy-publish'
+                id 'maven-publish'
                 ${pluginConfig}
             }
 
@@ -73,18 +73,15 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
             artifactory {
                 publish {
                    
-                    repository {
-                        maven = false
-                    }
                     defaults {
-                        publications('ivy')
+                        publications('maven')
                     }
                 }
             }
 
             publishing {
                 publications {
-                    ivy(IvyPublication) {
+                    maven(MavenPublication) {
                         from components.java
                     }
                 }
@@ -100,12 +97,12 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
 
         when:
         def result = getPreparedGradleRunner()
-                .withArguments('artifactoryPublish', '--exclude-task', 'changelog', '--stacktrace', '-i', "-DRUNONCI=true", '-PjiraFieldName=Labels', "-DARTIFACTORYBASEURL=${urlStr}", '-DSNAPSHOTREPOKEY=snapshots', '-DRELEASEREPOKEY=releases', '-DARTIFACTORYUSERNAME=admin', '-DARTIFACTORYUSERPASSWD=admin123', "-DJIRABASEURL=${urlStr}", '-DJIRAUSERNAME=admin', '-DJIRAUSERPASSWD=admin123')
+                .withArguments('artifactoryPublish', '--exclude-task', 'changelog', '--stacktrace', '-i', '-PjiraFieldName=Labels', "-DARTIFACTORYBASEURL=${urlStr}", '-DSNAPSHOTREPOKEY=snapshots', '-DRELEASEREPOKEY=releases', '-DARTIFACTORYUSERNAME=admin', '-DARTIFACTORYUSERPASSWD=admin123', "-DJIRABASEURL=${urlStr}", '-DJIRAUSERNAME=admin', '-DJIRAUSERPASSWD=admin123')
                 .build()
 
         boolean upLoadListCheck = true
         upLoadList.each {
-            upLoadListCheck &= it.contains('releases/com.intershop/')
+            upLoadListCheck &= it.contains('releases/com/intershop/')
         }
 
         then:
@@ -145,7 +142,7 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
         buildFile << """
             plugins {
                 id 'java'
-                id 'ivy-publish'
+                id 'maven-publish'
                 ${pluginConfig}
             }
 
@@ -158,18 +155,15 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
 
             artifactory {
                 publish {
-                    repository {
-                        maven = false
-                    }
                     defaults {
-                        publications('ivy')
+                        publications('mvn')
                     }
                 }
             }
 
             publishing {
                 publications {
-                    ivy(IvyPublication) {
+                    mvn(MavenPublication) {
                         from components.java
                     }
                 }
@@ -185,7 +179,7 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
 
         when:
         def result = getPreparedGradleRunner()
-                .withArguments('releaseLog', '--exclude-task', 'changelog', '--stacktrace', '-i', "-DRUNONCI=true", '-PjiraFieldName=Labels', "-DARTIFACTORYBASEURL=${urlStr}", '-DSNAPSHOTREPOKEY=snapshots', '-DRELEASEREPOKEY=releases', '-DARTIFACTORYUSERNAME=admin', '-DARTIFACTORYUSERPASSWD=admin123', "-DJIRABASEURL=${urlStr}", '-DJIRAUSERNAME=admin', '-DJIRAUSERPASSWD=admin123')
+                .withArguments('releaseLog', '--exclude-task', 'changelog', '--stacktrace', '-i', '-PjiraFieldName=Labels', "-DARTIFACTORYBASEURL=${urlStr}", '-DSNAPSHOTREPOKEY=snapshots', '-DRELEASEREPOKEY=releases', '-DARTIFACTORYUSERNAME=admin', '-DARTIFACTORYUSERPASSWD=admin123', "-DJIRABASEURL=${urlStr}", '-DJIRAUSERNAME=admin', '-DJIRAUSERPASSWD=admin123')
                 .build()
 
         boolean upLoadListCheck = true
@@ -260,7 +254,7 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
 
         when:
         def result = getPreparedGradleRunner()
-                .withArguments('artifactoryPublish', '--exclude-task', 'changelog', '--stacktrace', '-i', "-DRUNONCI=true", '-PjiraFieldName=Labels', "-DARTIFACTORYBASEURL=${urlStr}", '-DSNAPSHOTREPOKEY=snapshots', '-DRELEASEREPOKEY=releases', '-DARTIFACTORYUSERNAME=admin', '-DARTIFACTORYUSERPASSWD=admin123', "-DJIRABASEURL=${urlStr}", '-DJIRAUSERNAME=admin', '-DJIRAUSERPASSWD=admin123')
+                .withArguments('artifactoryPublish', '--exclude-task', 'changelog', '--stacktrace', '-i', '-PjiraFieldName=Labels', "-DARTIFACTORYBASEURL=${urlStr}", '-DSNAPSHOTREPOKEY=snapshots', '-DRELEASEREPOKEY=releases', '-DARTIFACTORYUSERNAME=admin', '-DARTIFACTORYUSERPASSWD=admin123', "-DJIRABASEURL=${urlStr}", '-DJIRAUSERNAME=admin', '-DJIRAUSERPASSWD=admin123')
                 .build()
 
         boolean upLoadListCheck = true
@@ -305,7 +299,7 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
         buildFile << """
             plugins {
                 id 'java'
-                id 'ivy-publish'
+                id 'maven-publish'
                 ${pluginConfig}
             }
 
@@ -314,18 +308,15 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
 
             artifactory {
                 publish {
-                    repository {
-                        maven = false
-                    }
                     defaults {
-                        publications('ivy')
+                        publications('maven')
                     }
                 }
             }
 
             publishing {
                 publications {
-                    ivy(IvyPublication) {
+                    maven(MavenPublication) {
                         from components.java
                     }
                 }
@@ -341,12 +332,12 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
 
         when:
         def result = getPreparedGradleRunner()
-                .withArguments('artifactoryPublish', '--exclude-task', 'changelog', '--stacktrace', '-d', "-DRUNONCI=true", '-PjiraFieldName=Labels', "-DARTIFACTORYBASEURL=${urlStr}", '-DSNAPSHOTREPOKEY=snapshots', '-DRELEASEREPOKEY=releases', '-DARTIFACTORYUSERNAME=admin', '-DARTIFACTORYUSERPASSWD=admin123', "-DJIRABASEURL=${urlStr}", '-DJIRAUSERNAME=admin', '-DJIRAUSERPASSWD=admin123')
+                .withArguments('artifactoryPublish', '--exclude-task', 'changelog', '--stacktrace', '-PjiraFieldName=Labels', "-DARTIFACTORYBASEURL=${urlStr}", '-DSNAPSHOTREPOKEY=snapshots', '-DRELEASEREPOKEY=releases', '-DARTIFACTORYUSERNAME=admin', '-DARTIFACTORYUSERPASSWD=admin123', "-DJIRABASEURL=${urlStr}", '-DJIRAUSERNAME=admin', '-DJIRAUSERPASSWD=admin123')
                 .build()
 
         boolean upLoadListCheck = true
         upLoadList.each {
-            upLoadListCheck &= it.contains('snapshots/com.intershop/')
+            upLoadListCheck &= it.contains('snapshots/com/intershop/')
         }
 
         then:
@@ -382,7 +373,7 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
         buildFile << """
             plugins {
                 id 'java'
-                id 'ivy-publish'
+                id 'maven-publish'
                 ${pluginConfig}
             }
 
@@ -391,18 +382,15 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
 
             artifactory {
                 publish {
-                    repository {
-                        maven = false
-                    }
                     defaults {
-                        publications('ivy')
+                        publications('maven')
                     }
                 }
             }
 
             publishing {
                 publications {
-                    ivy(IvyPublication) {
+                    maven(MavenPublication) {
                         from components.java
                     }
                 }
@@ -418,12 +406,12 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
 
         when:
         def result = getPreparedGradleRunner()
-                .withArguments('releaseLog', '--exclude-task', 'changelog', '--stacktrace', '-d', "-DRUNONCI=true", '-PjiraFieldName=Labels', "-DARTIFACTORYBASEURL=${urlStr}", '-DSNAPSHOTREPOKEY=snapshots', '-DRELEASEREPOKEY=releases', '-DARTIFACTORYUSERNAME=admin', '-DARTIFACTORYUSERPASSWD=admin123', "-DJIRABASEURL=${urlStr}", '-DJIRAUSERNAME=admin', '-DJIRAUSERPASSWD=admin123')
+                .withArguments('releaseLog', '--exclude-task', 'changelog', '--stacktrace', '-d', '-PjiraFieldName=Labels', "-DARTIFACTORYBASEURL=${urlStr}", '-DSNAPSHOTREPOKEY=snapshots', '-DRELEASEREPOKEY=releases', '-DARTIFACTORYUSERNAME=admin', '-DARTIFACTORYUSERPASSWD=admin123', "-DJIRABASEURL=${urlStr}", '-DJIRAUSERNAME=admin', '-DJIRAUSERPASSWD=admin123')
                 .build()
 
         boolean upLoadListCheck = true
         upLoadList.each {
-            upLoadListCheck &= it.contains('snapshots/com.intershop/')
+            upLoadListCheck &= it.contains('snapshots/com/intershop/')
         }
 
         then:

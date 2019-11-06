@@ -17,7 +17,6 @@ package com.intershop.gradle.artifactorypublish
 
 import com.intershop.gradle.buildinfo.BuildInfoExtension
 import com.intershop.gradle.buildinfo.BuildInfoPlugin
-import com.intershop.gradle.repoconfig.RepoConfigRegistry
 import groovy.transform.CompileDynamic
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -57,79 +56,67 @@ class SimpleArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
         // apply Artifactory publishing plugin
         project.rootProject.plugins.apply(ArtifactoryPlugin)
 
-        //Configuration will be applied only if runOnCI is true
-        String runOnCI = getVariable(project, RUNONCI_ENV, RUNONCI_PRJ, 'false')
-        project.logger.debug('Publishing Configuration: RunOnCI: {}', runOnCI.toBoolean())
+        project.logger.info('Intershop publishing configuration for Artifactory will be applied to project {}', project.name)
 
-        if (runOnCI.toBoolean()) {
-            project.logger.info('Intershop publishing configuration for Artifactory will be applied to project {}', project.name)
+        // Publishing configuration
+        String repoBaseURL = getVariable(project, REPO_BASEURL_ENV, REPO_BASEURL_PRJ, '')
+        String repoUserLogin = getVariable(project, REPO_USER_NAME_ENV, REPO_USER_NAME_PRJ, '')
+        String repoUserPassword = getVariable(project, REPO_USER_PASSWORD_ENV, REPO_USER_PASSWORD_PRJ, '')
 
-            // Publishing configuration
-            String repoBaseURL = getVariable(project, REPO_BASEURL_ENV, REPO_BASEURL_PRJ, '')
-            String repoUserLogin = getVariable(project, REPO_USER_NAME_ENV, REPO_USER_NAME_PRJ, '')
-            String repoUserPassword = getVariable(project, REPO_USER_PASSWORD_ENV, REPO_USER_PASSWORD_PRJ, '')
+        String repoReleaseKey = getVariable(project, RELEASE_KEY_ENV, RELEASE_KEY_PRJ, '')
+        String repoSnapshotKey = getVariable(project, SNAPSHOT_KEY_ENV, SNAPSHOT_KEY_PRJ, '')
 
-            String repoReleaseKey = getVariable(project, RELEASE_KEY_ENV, RELEASE_KEY_PRJ, '')
-            String repoSnapshotKey = getVariable(project, SNAPSHOT_KEY_ENV, SNAPSHOT_KEY_PRJ, '')
+        if(repoBaseURL && repoUserLogin && repoUserPassword && repoReleaseKey && repoSnapshotKey) {
+            ArtifactoryPluginConvention artifactoryPluginConvention = project.rootProject.convention.getPlugin(ArtifactoryPluginConvention)
+            BuildInfoExtension infoExtension = project.rootProject.extensions.findByType(BuildInfoExtension)
 
-            if(repoBaseURL && repoUserLogin && repoUserPassword && repoReleaseKey && repoSnapshotKey) {
-                ArtifactoryPluginConvention artifactoryPluginConvention = project.rootProject.convention.getPlugin(ArtifactoryPluginConvention)
-                BuildInfoExtension infoExtension = project.rootProject.extensions.findByType(BuildInfoExtension)
-
-                project.artifactory {
-                    contextUrl = repoBaseURL
-                    publish {
-                        repository {
-                            repoKey = ""
-                            username = repoUserLogin
-                            password = repoUserPassword
-
-                            ivy {
-                                ivyLayout = RepoConfigRegistry.ivyPattern
-                                artifactLayout = RepoConfigRegistry.artifactPattern
-                                mavenCompatible = false
-                            }
-                        }
+            project.artifactory {
+                contextUrl = repoBaseURL
+                publish {
+                    repository {
+                        repoKey = ""
+                        username = repoUserLogin
+                        password = repoUserPassword
                     }
-
-                    String buildNumber = infoExtension.ciProvider.buildNumber?:'' + new Random(System.currentTimeMillis()).nextInt(20000)
-                    String buildTimeStamp = infoExtension.ciProvider.buildTime?:'' + (new Date()).toTimestamp()
-                    String vcsRevision = infoExtension.scmProvider.SCMRevInfo?:'unknown'
-                    String vcsBranchName = infoExtension.scmProvider.branchName?:'unknown'
-
-                    clientConfig.info.setBuildName(infoExtension.ciProvider.buildJob?:project.name)
-                    clientConfig.info.setBuildNumber(buildNumber)
-                    clientConfig.info.setBuildTimestamp(buildTimeStamp)
-                    clientConfig.info.setBuildUrl(infoExtension.ciProvider.buildUrl?:'unknown')
-                    clientConfig.info.setVcsRevision(vcsRevision)
-                    clientConfig.info.setVcsUrl(infoExtension.scmProvider.SCMOrigin?:'unknown')
-
-                    clientConfig.publisher.addMatrixParam('build.number', buildNumber)
-                    clientConfig.publisher.addMatrixParam('vcs.revision', vcsRevision)
-                    clientConfig.publisher.addMatrixParam('build.timestamp', buildTimeStamp)
-                    clientConfig.publisher.addMatrixParam('vcs.branchname', vcsBranchName)
-
-                    clientConfig.publisher.addMatrixParam('build.java.version', infoExtension.infoProvider.javaVersion)
-                    clientConfig.publisher.addMatrixParam('source.java.version', infoExtension.infoProvider.javaSourceCompatibility ?: infoExtension.infoProvider.javaVersion.split('_')[0])
-                    clientConfig.publisher.addMatrixParam('target.java.version', infoExtension?.infoProvider.javaTargetCompatibility ?: infoExtension?.infoProvider.javaVersion.split('_')[0])
-                    clientConfig.publisher.addMatrixParam('build.status', infoExtension?.infoProvider.projectStatus?:'unknown')
-                    clientConfig.publisher.addMatrixParam('build.date', infoExtension?.infoProvider.OSTime?:'unknown')
-                    clientConfig.publisher.addMatrixParam('gradle.version', infoExtension?.infoProvider.gradleVersion?:'unknown')
-                    clientConfig.publisher.addMatrixParam('gradle.rootproject', infoExtension?.infoProvider.rootProject?:'unknown')
-                    clientConfig.publisher.addMatrixParam('scm.type', infoExtension?.scmProvider.SCMType?:'unknown')
-                    clientConfig.publisher.addMatrixParam('scm.branch.name', infoExtension?.scmProvider.branchName?:'unknown')
-                    clientConfig.publisher.addMatrixParam('scm.change.time', infoExtension?.scmProvider.lastChangeTime?:'unknown')
-                    clientConfig.publisher.addMatrixParam('project.name', project.getName())
-                }
-                project.rootProject.allprojects {
-                    it.plugins.apply(ArtifactoryPlugin)
                 }
 
-                // configuration depends on version ... this is available after evaluation
-                project.rootProject.afterEvaluate {
-                    artifactoryPluginConvention.clientConfig.publisher.repoKey = project.version.toString().endsWith('-SNAPSHOT') ? repoSnapshotKey : repoReleaseKey
-                    artifactoryPluginConvention.clientConfig.publisher.addMatrixParam('project.version', project.getVersion())
-                }
+                String buildNumber = infoExtension.ciProvider.buildNumber?:'' + new Random(System.currentTimeMillis()).nextInt(20000)
+                String buildTimeStamp = infoExtension.ciProvider.buildTime?:'' + (new Date()).toTimestamp()
+                String vcsRevision = infoExtension.scmProvider.SCMRevInfo?:'unknown'
+                String vcsBranchName = infoExtension.scmProvider.branchName?:'unknown'
+
+                clientConfig.info.setBuildName(infoExtension.ciProvider.buildJob?:project.name)
+                clientConfig.info.setBuildNumber(buildNumber)
+                clientConfig.info.setBuildTimestamp(buildTimeStamp)
+                clientConfig.info.setBuildUrl(infoExtension.ciProvider.buildUrl?:'unknown')
+                clientConfig.info.setVcsRevision(vcsRevision)
+                clientConfig.info.setVcsUrl(infoExtension.scmProvider.SCMOrigin?:'unknown')
+
+                clientConfig.publisher.addMatrixParam('build.number', buildNumber)
+                clientConfig.publisher.addMatrixParam('vcs.revision', vcsRevision)
+                clientConfig.publisher.addMatrixParam('build.timestamp', buildTimeStamp)
+                clientConfig.publisher.addMatrixParam('vcs.branchname', vcsBranchName)
+
+                clientConfig.publisher.addMatrixParam('build.java.version', infoExtension.infoProvider.javaVersion)
+                clientConfig.publisher.addMatrixParam('source.java.version', infoExtension.infoProvider.javaSourceCompatibility ?: infoExtension.infoProvider.javaVersion.split('_')[0])
+                clientConfig.publisher.addMatrixParam('target.java.version', infoExtension?.infoProvider.javaTargetCompatibility ?: infoExtension?.infoProvider.javaVersion.split('_')[0])
+                clientConfig.publisher.addMatrixParam('build.status', infoExtension?.infoProvider.projectStatus?:'unknown')
+                clientConfig.publisher.addMatrixParam('build.date', infoExtension?.infoProvider.OSTime?:'unknown')
+                clientConfig.publisher.addMatrixParam('gradle.version', infoExtension?.infoProvider.gradleVersion?:'unknown')
+                clientConfig.publisher.addMatrixParam('gradle.rootproject', infoExtension?.infoProvider.rootProject?:'unknown')
+                clientConfig.publisher.addMatrixParam('scm.type', infoExtension?.scmProvider.SCMType?:'unknown')
+                clientConfig.publisher.addMatrixParam('scm.branch.name', infoExtension?.scmProvider.branchName?:'unknown')
+                clientConfig.publisher.addMatrixParam('scm.change.time', infoExtension?.scmProvider.lastChangeTime?:'unknown')
+                clientConfig.publisher.addMatrixParam('project.name', project.getName())
+            }
+            project.rootProject.allprojects {
+                it.plugins.apply(ArtifactoryPlugin)
+            }
+
+            // configuration depends on version ... this is available after evaluation
+            project.rootProject.afterEvaluate {
+                artifactoryPluginConvention.clientConfig.publisher.repoKey = project.version.toString().endsWith('-SNAPSHOT') ? repoSnapshotKey : repoReleaseKey
+                artifactoryPluginConvention.clientConfig.publisher.addMatrixParam('project.version', project.getVersion())
             }
         }
     }
