@@ -109,7 +109,7 @@ if (project.version.toString().endsWith("-SNAPSHOT")) {
 
 tasks {
     withType<Test>().configureEach {
-        systemProperty("intershop.gradle.versions", "5.6.3")
+        systemProperty("intershop.gradle.versions", "5.6.3, 6.0")
     }
 
     val copyAsciiDoc = register<Copy>("copyAsciiDoc") {
@@ -256,7 +256,7 @@ bintray {
 }
 
 dependencies {
-    implementation("com.intershop.gradle.jiraconnector:jiraconnector-gradle-plugin:5.1.0")
+    implementation("com.intershop.gradle.jiraconnector:jiraconnector-gradle-plugin:5.1.1")
 
     implementation("org.jfrog.buildinfo:build-info-extractor-gradle:4.10.0") {
         exclude(module = "groovy-all")
