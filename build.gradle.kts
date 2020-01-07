@@ -258,10 +258,10 @@ bintray {
 dependencies {
     implementation("com.intershop.gradle.jiraconnector:jiraconnector-gradle-plugin:5.1.1")
 
-    implementation("org.jfrog.buildinfo:build-info-extractor-gradle:4.11.0") {
+    implementation("org.jfrog.buildinfo:build-info-extractor-gradle:4.13.0") {
         exclude(module = "groovy-all")
     }
-    implementation("com.intershop.gradle.buildinfo:buildinfo-gradle-plugin:5.0.0")
+    implementation("com.intershop.gradle.buildinfo:buildinfo-gradle-plugin:6.0.0")
 
     testImplementation("com.intershop.gradle.test:test-gradle-plugin:3.1.0-dev.2")
     testImplementation(gradleTestKit())
