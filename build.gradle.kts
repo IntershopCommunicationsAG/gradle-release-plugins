@@ -18,9 +18,6 @@ import java.util.*
  * limitations under the License.
  */
 plugins {
-    // build performance
-    id("com.gradle.build-scan") version "3.0"
-
     // project plugins
     `java-gradle-plugin`
     groovy
@@ -35,7 +32,7 @@ plugins {
     `maven-publish`
 
     // intershop version plugin
-    id("com.intershop.gradle.scmversion") version "6.0.0"
+    id("com.intershop.gradle.scmversion") version "6.1.0"
 
     // plugin for documentation
     id("org.asciidoctor.jvm.convert") version "2.3.0"
@@ -48,12 +45,9 @@ plugins {
 }
 
 scm {
-    version.initialVersion = "1.0.0"
-}
-
-buildScan {
-    termsOfServiceUrl   = "https://gradle.com/terms-of-service"
-    termsOfServiceAgree = "yes"
+    version {
+        initialVersion = "1.0.0"
+    }
 }
 
 group = "com.intershop.gradle.publish"
@@ -109,7 +103,7 @@ if (project.version.toString().endsWith("-SNAPSHOT")) {
 
 tasks {
     withType<Test>().configureEach {
-        systemProperty("intershop.gradle.versions", "5.6.3, 6.0")
+        systemProperty("intershop.gradle.versions", "6.1.1")
     }
 
     val copyAsciiDoc = register<Copy>("copyAsciiDoc") {
@@ -256,7 +250,7 @@ bintray {
 }
 
 dependencies {
-    implementation("com.intershop.gradle.jiraconnector:jiraconnector-gradle-plugin:5.1.1")
+    implementation("com.intershop.gradle.jiraconnector:jiraconnector-gradle-plugin:6.0.0")
 
     implementation("org.jfrog.buildinfo:build-info-extractor-gradle:4.13.0") {
         exclude(module = "groovy-all")

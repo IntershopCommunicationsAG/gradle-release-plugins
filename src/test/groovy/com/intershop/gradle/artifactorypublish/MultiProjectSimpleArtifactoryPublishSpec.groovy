@@ -32,7 +32,7 @@ class MultiProjectSimpleArtifactoryPublishSpec extends AbstractIntegrationGroovy
     String configToken = System.properties['configURLToken']
 
     static String pluginConfig = """
-                  id 'com.intershop.gradle.scmversion' version '3.6.0'
+                  id 'com.intershop.gradle.scmversion' version '6.1.0'
                   id 'com.intershop.gradle.simpleartifactorypublish-configuration'
     """.stripIndent()
 

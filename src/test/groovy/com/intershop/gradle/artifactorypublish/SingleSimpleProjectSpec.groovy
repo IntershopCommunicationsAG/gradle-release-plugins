@@ -27,7 +27,7 @@ import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 class SingleSimpleProjectSpec extends AbstractIntegrationGroovySpec {
 
     static String pluginConfig = """
-                  id 'com.intershop.gradle.scmversion' version '3.6.0'
+                  id 'com.intershop.gradle.scmversion' version '6.1.0'
                   id 'com.intershop.gradle.simpleartifactorypublish-configuration'
     """.stripIndent()
 
@@ -204,7 +204,7 @@ class SingleSimpleProjectSpec extends AbstractIntegrationGroovySpec {
 
         then:
         upLoadListCheck
-        upLoadList.size() == 2
+        upLoadList.size() == 3
         result.task(':artifactoryPublish').outcome == SUCCESS
     }
 

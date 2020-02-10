@@ -15,7 +15,7 @@
  */
 package com.intershop.gradle.artifactorypublish
 
-import com.intershop.gradle.test.AbstractIntegrationGroovySpec
+import com.intershop.gradle.test.AbstractIntegrationKotlinSpec
 import com.intershop.gradle.test.util.TestDispatcher
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.Rule
@@ -25,13 +25,13 @@ import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 import static org.gradle.testkit.runner.TaskOutcome.UP_TO_DATE
 
 @Unroll
-class MultiProjectArtifactorySpec extends AbstractIntegrationGroovySpec {
+class MultiProjectArtifactoryKtsSpec extends AbstractIntegrationKotlinSpec {
 
     static String issueKey = 'ISTOOLS-993'
 
     static String pluginConfig = """
-                  id 'com.intershop.gradle.scmversion' version '6.1.0'
-                  id 'com.intershop.gradle.artifactorypublish-configuration'
+                  id("com.intershop.gradle.scmversion") version "6.1.0"
+                  id("com.intershop.gradle.artifactorypublish-configuration")
     """.stripIndent()
 
     String configURL = System.properties['configURL']
@@ -39,17 +39,17 @@ class MultiProjectArtifactorySpec extends AbstractIntegrationGroovySpec {
 
     private static String buildFileContentBase = """
                                           plugins {
-                                                id 'java'
-                                                id 'maven-publish'
-                                            }
-
-                                            publishing {
-                                                publications {
-                                                    maven(MavenPublication) {
-                                                        from components.java
-                                                    }
+                                            java
+                                            `maven-publish`
+                                          }
+                                            
+                                          publishing {
+                                            publications {
+                                                create<MavenPublication>("maven") {
+                                                    from(components["java"])
                                                 }
                                             }
+                                          }
                                           """.stripIndent()
 
     @Rule
@@ -64,32 +64,35 @@ class MultiProjectArtifactorySpec extends AbstractIntegrationGroovySpec {
         server.setDispatcher(TestDispatcher.getIntegrationDispatcher(responses, upLoadList))
 
         buildFile << """
+                import groovy.lang.GroovyObject
+                import org.jfrog.gradle.plugin.artifactory.dsl.PublisherConfig
+
                 plugins {
-                  id 'maven-publish'
+                  `maven-publish`
                   ${pluginConfig}
                 }
 
-                group = 'com.intershop.testproject'
-                version = '1.0.0'
+                group = "com.intershop.testproject"
+                version = "1.0.0"
 
                 artifactory {
-                    publish {
-                        defaults {
-                            publications('maven')
-                            properties = ['testBla': 'testBla']
-                        }
-                    }
+                    publish(delegateClosureOf<PublisherConfig>{
+                        defaults(delegateClosureOf<GroovyObject> {
+                            invokeMethod("publications", "maven")
+                            setProperty( "properties", mapOf( "testBla" to "testBla"))
+                        })
+                    })
                 }
 
                 subprojects {
-                    group = 'com.intershop.testproject'
+                    group = "com.intershop.testproject"
                     version = rootProject.getVersion()
                 }
         """.stripIndent()
 
         settingsFile << """
             // define root proejct name
-            rootProject.name = 'p_testProject'
+            rootProject.name = "p_testProject"
         """.stripIndent()
         createSubProjectJava('project1a','com.intereshop.a', buildFileContent, '1.0.0')
         createSubProjectJava('project2b', 'com.intereshop.b', buildFileContent, '1.0.0')
@@ -139,25 +142,28 @@ class MultiProjectArtifactorySpec extends AbstractIntegrationGroovySpec {
         server.setDispatcher(TestDispatcher.getIntegrationDispatcher(responses, upLoadList))
 
         buildFile << """
+                import groovy.lang.GroovyObject
+                import org.jfrog.gradle.plugin.artifactory.dsl.PublisherConfig
+
                 plugins {
-                  id 'maven-publish'
+                  `maven-publish`
                   ${pluginConfig}
                 }
 
-                group = 'com.intershop.testproject'
-                version = '1.0.0'
+                group = "com.intershop.testproject"
+                version = "1.0.0"
 
                 artifactory {
-                    publish {
-                        defaults {
-                            publications('maven')
-                            properties = ['testBla': 'testBla']
-                        }
-                    }
+                    publish(delegateClosureOf<PublisherConfig>{
+                        defaults(delegateClosureOf<GroovyObject> {
+                            invokeMethod("publications", "maven")
+                            setProperty( "properties", mapOf( "testBla" to "testBla"))
+                        })
+                    })
                 }
 
                 subprojects {
-                    group = 'com.intershop.testproject'
+                    group = "com.intershop.testproject"
                     version = rootProject.getVersion()
                 }
                 
@@ -168,7 +174,7 @@ class MultiProjectArtifactorySpec extends AbstractIntegrationGroovySpec {
 
         settingsFile << """
             // define root proejct name
-            rootProject.name = 'p_testProject'
+            rootProject.name = "p_testProject"
         """.stripIndent()
         createSubProjectJava('project1a', 'com.intereshop.a', buildFileContent, '1.0.0')
         createSubProjectJava('project2b', 'com.intereshop.b', buildFileContent, '1.0.0')
@@ -217,31 +223,35 @@ class MultiProjectArtifactorySpec extends AbstractIntegrationGroovySpec {
         server.setDispatcher(TestDispatcher.getIntegrationDispatcher(responses, upLoadList))
 
         buildFile << """
+                import groovy.lang.GroovyObject
+                import org.jfrog.gradle.plugin.artifactory.dsl.PublisherConfig
+
                 plugins {
-                  id 'maven-publish'
+                  `maven-publish`
                   ${pluginConfig}
                 }
 
-                group = 'com.intershop.testproject'
-                version = '1.0.0'
+                group = "com.intershop.testproject"
+                version = "1.0.0"
 
                 artifactory {
-                    publish {
-                        defaults {
-                            publications('maven')
-                        }
-                    }
+                    publish(delegateClosureOf<PublisherConfig>{
+                        defaults(delegateClosureOf<GroovyObject> {
+                            invokeMethod("publications", "maven")
+                            setProperty( "properties", mapOf( "testBla" to "testBla"))
+                        })
+                    })
                 }
 
                 subprojects {
-                    group = 'com.intershop.testproject'
+                    group = "com.intershop.testproject"
                     version = rootProject.getVersion()
                 }
         """.stripIndent()
 
         settingsFile << """
             // define root proejct name
-            rootProject.name = 'p_testProject'
+            rootProject.name = "p_testProject"
         """.stripIndent()
         createSubProjectJava('project1a', 'com.intereshop.a', buildFileContent, '1.0.0')
         createSubProjectJava('project2b', 'com.intereshop.b', buildFileContent, '1.0.0')
@@ -291,31 +301,35 @@ class MultiProjectArtifactorySpec extends AbstractIntegrationGroovySpec {
         server.setDispatcher(TestDispatcher.getIntegrationDispatcher(responses, upLoadList))
 
         buildFile << """
+                import groovy.lang.GroovyObject
+                import org.jfrog.gradle.plugin.artifactory.dsl.PublisherConfig
+
                 plugins {
-                  id 'maven-publish'
+                  `maven-publish`
                   ${pluginConfig}
                 }
 
-                group = 'com.intershop.testproject'
-                version = '1.0.0-SNAPSHOT'
+                group = "com.intershop.testproject"
+                version = "1.0.0-SNAPSHOT"
 
                 artifactory {
-                    publish {
-                        defaults {
-                            publications('maven')
-                        }
-                    }
+                    publish(delegateClosureOf<PublisherConfig>{
+                        defaults(delegateClosureOf<GroovyObject> {
+                            invokeMethod("publications", "maven")
+                            setProperty( "properties", mapOf( "testBla" to "testBla"))
+                        })
+                    })
                 }
 
                 subprojects {
-                    group = 'com.intershop.testproject'
+                    group = "com.intershop.testproject"
                     version = rootProject.getVersion()
                 }
         """.stripIndent()
 
         settingsFile << """
             // define root proejct name
-            rootProject.name = 'p_testProject'
+            rootProject.name = "p_testProject"
         """.stripIndent()
         createSubProjectJava('project1a', 'com.intereshop.a', buildFileContent, '1.0.0-SNAPSHOT')
         createSubProjectJava('project2b', 'com.intereshop.b', buildFileContent, '1.0.0-SNAPSHOT')
@@ -349,7 +363,7 @@ class MultiProjectArtifactorySpec extends AbstractIntegrationGroovySpec {
         then:
         result.task(':artifactoryPublish').outcome == SUCCESS
         upLoadListCheck
-        upLoadList.size() > 4
+        upLoadList.size() == 6
         ! result.tasks.contains(':writeToJira')
 
         where:
@@ -365,31 +379,35 @@ class MultiProjectArtifactorySpec extends AbstractIntegrationGroovySpec {
         server.setDispatcher(TestDispatcher.getIntegrationDispatcher(responses, upLoadList))
 
         buildFile << """
+                import groovy.lang.GroovyObject
+                import org.jfrog.gradle.plugin.artifactory.dsl.PublisherConfig
+
                 plugins {
-                  id 'maven-publish'
+                  `maven-publish`
                   ${pluginConfig}
                 }
 
-                group = 'com.intershop.testproject'
-                version = '1.0.0-SNAPSHOT'
+                group = "com.intershop.testproject"
+                version = "1.0.0-SNAPSHOT"
 
                 artifactory {
-                    publish {
-                        defaults {
-                            publications('maven')
-                        }
-                    }
+                    publish(delegateClosureOf<PublisherConfig>{
+                        defaults(delegateClosureOf<GroovyObject> {
+                            invokeMethod("publications", "maven")
+                            setProperty( "properties", mapOf( "testBla" to "testBla"))
+                        })
+                    })
                 }
 
                 subprojects {
-                    group = 'com.intershop.testproject'
+                    group = "com.intershop.testproject"
                     version = rootProject.getVersion()
                 }
         """.stripIndent()
 
         settingsFile << """
             // define root proejct name
-            rootProject.name = 'p_testProject'
+            rootProject.name = "p_testProject"
         """.stripIndent()
         createSubProjectJava('project1a', 'com.intereshop.a', buildFileContent, '1.0.0-SNAPSHOT')
         createSubProjectJava('project2b', 'com.intereshop.b', buildFileContent, '1.0.0-SNAPSHOT')

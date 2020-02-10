@@ -29,7 +29,7 @@ class SingleProjectSpec extends AbstractIntegrationGroovySpec {
 
     static String issueKey = 'ISTOOLS-993'
     static String pluginConfig = """
-                  id 'com.intershop.gradle.scmversion' version '5.0.0'
+                  id 'com.intershop.gradle.scmversion' version '6.1.0'
                   id 'com.intershop.gradle.artifactorypublish-configuration'
     """.stripIndent()
 
@@ -342,7 +342,7 @@ class SingleProjectSpec extends AbstractIntegrationGroovySpec {
 
         then:
         upLoadListCheck
-        upLoadList.size() == 2
+        upLoadList.size() == 3
         result.task(':artifactoryPublish').outcome == SUCCESS
         ! result.tasks.contains(':writeToJira')
     }
