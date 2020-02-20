@@ -103,7 +103,7 @@ if (project.version.toString().endsWith("-SNAPSHOT")) {
 
 tasks {
     withType<Test>().configureEach {
-        systemProperty("intershop.gradle.versions", "6.1.1")
+        systemProperty("intershop.gradle.versions", "6.1.1,6.2")
     }
 
     val copyAsciiDoc = register<Copy>("copyAsciiDoc") {
