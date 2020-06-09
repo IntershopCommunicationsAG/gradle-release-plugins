@@ -38,10 +38,10 @@ plugins {
     id("org.asciidoctor.jvm.convert") version "2.3.0"
 
     // plugin for publishing to Gradle Portal
-    id("com.gradle.plugin-publish") version "0.10.1"
+    id("com.gradle.plugin-publish") version "0.12.0"
 
     // plugin for publishing to jcenter
-    id("com.jfrog.bintray") version "1.8.4"
+    id("com.jfrog.bintray") version "1.8.5"
 }
 
 scm {
