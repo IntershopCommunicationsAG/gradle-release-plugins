@@ -363,7 +363,7 @@ class MultiProjectArtifactoryKtsSpec extends AbstractIntegrationKotlinSpec {
         then:
         result.task(':artifactoryPublish').outcome == SUCCESS
         upLoadListCheck
-        upLoadList.size() == 6
+        upLoadList.size() > 3
         ! result.tasks.contains(':writeToJira')
 
         where:

@@ -170,7 +170,7 @@ class MultiProjectSimpleArtifactoryPublishSpec extends AbstractIntegrationGroovy
         then:
         result.task(':artifactoryPublish').outcome == SUCCESS
         upLoadListCheck
-        upLoadList.size() > 2
+        upLoadList.size() > 1
 
         where:
         buildFileContent << [buildFileContentBase]
