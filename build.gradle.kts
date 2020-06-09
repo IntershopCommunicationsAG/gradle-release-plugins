@@ -104,6 +104,12 @@ if (project.version.toString().endsWith("-SNAPSHOT")) {
 tasks {
     withType<Test>().configureEach {
         systemProperty("intershop.gradle.versions", "6.2,6.4,6.5")
+
+        testLogging {
+            showStandardStreams = true
+        }
+
+        dependsOn("jar")
     }
 
     val copyAsciiDoc = register<Copy>("copyAsciiDoc") {
