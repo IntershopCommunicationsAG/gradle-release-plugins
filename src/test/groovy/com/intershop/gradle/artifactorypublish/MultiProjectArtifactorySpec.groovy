@@ -349,7 +349,7 @@ class MultiProjectArtifactorySpec extends AbstractIntegrationGroovySpec {
         then:
         result.task(':artifactoryPublish').outcome == SUCCESS
         upLoadListCheck
-        upLoadList.size() > 4
+        upLoadList.size() > 3
         ! result.tasks.contains(':writeToJira')
 
         where:
