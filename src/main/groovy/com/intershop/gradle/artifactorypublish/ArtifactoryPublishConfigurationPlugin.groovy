@@ -17,7 +17,6 @@ package com.intershop.gradle.artifactorypublish
 
 import com.intershop.gradle.buildinfo.BuildInfoExtension
 import com.intershop.gradle.buildinfo.BuildInfoPlugin
-import com.intershop.gradle.jiraconnector.JiraConnectorPlugin
 import com.intershop.gradle.repoconfig.RepoConfigRegistry
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
@@ -52,18 +51,6 @@ class ArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
     public final static String REPO_USER_PASSWORD_PRJ = 'artifactoryUserPASSWD'
 
     /** Repository Configuration - End **/
-
-    /** Jira configuration - start **/
-    public final static String JIRA_BASEURL_ENV = 'JIRABASEURL'
-    public final static String JIRA_BASEURL_PRJ = 'jiraBaseURL'
-
-    public final static String JIRA_USER_NAME_ENV = 'JIRAUSERNAME'
-    public final static String JIRA_USER_NAME_PRJ = 'jiraUserName'
-
-    public final static String JIRA_USER_PASSWORD_ENV = 'JIRAUSERPASSWD'
-    public final static String JIRA_USER_PASSWORD_PRJ = 'jiraUserPASSWD'
-
-    /** Jira configuration - End **/
 
     public void apply(Project project) {
         project.rootProject.plugins.apply(BuildInfoPlugin)
@@ -148,36 +135,13 @@ class ArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
                 }
             }
 
-            String jiraBaseURL = getVariable(project, JIRA_BASEURL_ENV, JIRA_BASEURL_PRJ, '')
-            String jiraUserLogin = getVariable(project, JIRA_USER_NAME_ENV, JIRA_USER_NAME_PRJ, '')
-            String jiraUserPassword = getVariable(project, JIRA_USER_PASSWORD_ENV, JIRA_USER_PASSWORD_PRJ, '')
+            // run change log creation with a separate call ...
+            Task releaseLog = project.rootProject.tasks.maybeCreate('releaseLog')
 
-            if(jiraBaseURL && jiraUserLogin && jiraUserPassword) {
-                project.rootProject.plugins.apply(JiraConnectorPlugin)
-
-                project.rootProject.jiraConnector {
-                    linePattern = '3\\+.*'
-                    fieldName = jiraFieldName
-                    versionMessage = 'version created by build plugin'
-                    issueFile = project.rootProject.tasks.changelog.outputs.files.singleFile
-
-                    if (project.name.contains('_')) {
-                        fieldPattern = '[a-z1-9]*_(.*)'
-                    }
-                }
-
-                project.rootProject.tasks.setIssueField.dependsOn project.rootProject.tasks.changelog
-
-                // run change log creation with a separate call ...
-                Task releaseLog = project.rootProject.tasks.maybeCreate('releaseLog')
-
-                project.getRootProject().afterEvaluate {
-                    project.jiraConnector.fieldValue = "${project.name}/${project.version}"
-
-                    //... only if the version does not end with SNAPSHOT
-                    if(! project.version.toString().endsWith('-SNAPSHOT')) {
-                        project.rootProject.tasks.releaseLog.dependsOn project.tasks.setIssueField
-                    }
+            project.getRootProject().afterEvaluate {
+                //... only if the version does not end with SNAPSHOT
+                if(! project.version.toString().endsWith('-SNAPSHOT')) {
+                    project.rootProject.tasks.releaseLog.dependsOn project.tasks.changelog
                 }
             }
 

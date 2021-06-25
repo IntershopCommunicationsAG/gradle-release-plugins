@@ -189,10 +189,7 @@ class SingleProjectSpec extends AbstractIntegrationSpec {
         }
 
         then:
-        result.task(':setIssueField').outcome == SUCCESS
         result.task(':releaseLog').outcome == SUCCESS
-        responses.get('onebody').contains('"project":{"key":"ISTOOLS"}')
-        responses.get('onebody').contains('"issuetype":{"id":"10001"}')
     }
 
     def 'test release publishing with artifactory and maven'() {

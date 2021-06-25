@@ -8,6 +8,9 @@ plugins {
     // ide plugin
     id 'idea'
 
+    // artifact signing - necessary on Maven Central
+    id 'signing'
+
     // intershop test plugin
     id 'com.intershop.gradle.test' version '2.2.0'
 
@@ -21,10 +24,7 @@ plugins {
     id 'com.intershop.gradle.scmversion' version '2.3.4'
 
     // plugin for publishing to Gradle Portal
-    id 'com.gradle.plugin-publish' version '0.9.7'
-
-    // plugin for publishing to jcenter
-    id 'com.jfrog.bintray' version '1.7.3'
+    id 'com.gradle.plugin-publish' version '0.12.0'
 }
 
 scm {
@@ -138,57 +138,48 @@ publishing {
                 def Node root = asNode();
                 root.appendNode('name', project.name)
                 root.appendNode('description', project.description)
-                root.appendNode('url', "https:/gitlab.intershop.de/IntershopGradlePlugins/${project.name}")
-
-                def scm = root.appendNode( 'scm' )
-                scm.appendNode( 'url', "https://gitlab.intershop.de/IntershopGradlePlugins/${project.name}")
-                scm.appendNode( 'connection', "scm:git:https://gitlab.intershop.de/IntershopGradlePlugins/${project.name}.git")
-
-                def org = root.appendNode( 'organization' )
-                org.appendNode( 'name', 'Intershop Communications' )
-                org.appendNode( 'url', 'http://intershop.com' )
+                root.appendNode('url', "https://github.com/IntershopCommunicationsAG/${project.name}")
 
                 def license = root.appendNode( 'licenses' ).appendNode( 'license' );
                 license.appendNode( 'name', 'Apache License, Version 2.0' )
                 license.appendNode( 'url', 'http://www.apache.org/licenses/LICENSE-2.0' )
                 license.appendNode( 'distribution', 'repo' )
+
+                def org = root.appendNode( 'organization' )
+                org.appendNode( 'name', 'Intershop Communications' )
+                org.appendNode( 'url', 'http://intershop.com' )
+
+                def developers = root.appendNode( 'developers' )
+                def developer = developers.appendNode( 'developer' )
+                developer.appendNode( 'id', 'm-raab')
+                developer.appendNode( 'name', 'M. Raab')
+                developer.appendNode( 'email', 'mraab@intershop.de')
+
+                def scm = root.appendNode( 'scm' )
+                scm.appendNode( 'url', "https://github.com/IntershopCommunicationsAG/${project.name}")
+                scm.appendNode( 'connection', "git@github.com:IntershopCommunicationsAG/${project.name}.git")
+                scm.appendNode( 'developerConnection', "git@github.com:IntershopCommunicationsAG/${project.name}.git")
+            }
+        }
+    }
+    repositories {
+        maven {
+            def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+            def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots"
+            url = version.toString().endsWith("SNAPSHOT") ? snapshotsRepoUrl : releasesRepoUrl
+            credentials {
+                username = sonatypeUsername
+                password = sonatypePassword
             }
         }
     }
 }
 
-publish.dependsOn asciidoctor
-
-bintray {
-    user = System.getenv('BINTRAY_USER')
-    key = System.getenv('BINTRAY_KEY')
-    pkg {
-        repo = 'maven'
-        name = project.name
-        userOrg = 'intershopcommunicationsag'
-
-        licenses = ['Apache-2.0']
-        vcsUrl = "https://github.com/IntershopCommunicationsAG/${project.name}"
-
-        desc = project.description
-        websiteUrl = "https://github.com/IntershopCommunicationsAG/${project.name}"
-        issueTrackerUrl = "https://github.com/IntershopCommunicationsAG/${project.name}/issues"
-
-        labels = ['intershop', 'gradle', 'plugin', 'publish', 'release']
-        publicDownloadNumbers = true
-
-        version {
-            name = project.version
-            desc = "${project.description} ${project.version}"
-            released  = new Date()
-            vcsTag = project.version
-        }
-
-        publications = ['intershopMvn']
-    }
+signing {
+    sign(publishing.publications["intershopMvn"])
 }
 
-bintrayUpload.dependsOn asciidoctor
+publish.dependsOn asciidoctor
 
 pluginBundle {
     website = "https://github.com/IntershopCommunicationsAG/${project.name}"
@@ -209,10 +200,6 @@ pluginBundle {
             id = 'com.intershop.gradle.javasource-plugin'
             displayName = 'Plugin with Intershop specific javasource package configuration'
         }
-        nexuspublishPlugin {
-            id = 'com.intershop.gradle.nexuspublish-configuration'
-            displayName = 'Plugin with specific publishing configuration'
-        }
         simplepublishPlugin {
             id = 'com.intershop.gradle.simplepublish-configuration'
             displayName = 'Plugin with simple publishing configuration'
@@ -229,8 +216,6 @@ pluginBundle {
 }
 
 dependencies {
-    compile 'com.intershop.gradle.nexusstaging:nexusstaging-gradle-plugin:2.2.0'
-    compile 'com.intershop.gradle.jiraconnector:jiraconnector-gradle-plugin:2.4.3'
     compile 'com.intershop.gradle.repoconfig:repoconfig-gradle-plugin:3.2.0'
     compile 'org.jfrog.buildinfo:build-info-extractor-gradle:4.4.13'
     compile 'com.intershop.gradle.buildinfo:buildinfo-gradle-plugin:2.3.1'
@@ -246,4 +231,5 @@ dependencies {
 
 repositories {
     jcenter()
+    mavenCentral()
 }

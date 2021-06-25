@@ -230,9 +230,7 @@ class MultiProjectArtifactorySpec extends AbstractIntegrationSpec {
         }
 
         then:
-        result.task(':setIssueField').outcome == SUCCESS
-        responses.get('onebody').contains('"project":{"key":"ISTOOLS"}')
-        responses.get('onebody').contains('"issuetype":{"id":"10001"}')
+        result.task(':releaseLog').outcome == SUCCESS
 
         where:
         buildFileContent << [buildFileContentBase]
