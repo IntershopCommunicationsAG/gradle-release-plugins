@@ -8,20 +8,23 @@ plugins {
     // ide plugin
     id 'idea'
 
-    // artifact signing - necessary on Maven Central
-    id 'signing'
-
     // intershop test plugin
     id 'com.intershop.gradle.test' version '2.2.0'
 
     // plugin for documentation
-    id 'org.asciidoctor.convert' version '1.5.3'
+    id 'org.asciidoctor.convert' version '1.6.1'
+
+    // publish plugin
+    id 'maven-publish'
+
+    // artifact signing - necessary on Maven Central
+    id 'signing'
 
     // intershop version plugin
     id 'com.intershop.gradle.scmversion' version '2.3.4'
 
     // plugin for publishing to Gradle Portal
-    id 'com.gradle.plugin-publish' version '0.12.0'
+    id 'com.gradle.plugin-publish' version '0.15.0'
 }
 
 scm {
@@ -46,7 +49,7 @@ if (project.version.endsWith('-SNAPSHOT')) {
 
 test {
     // Gradle versions for test
-    systemProperty 'intershop.gradle.versions', '2.11,3.4'
+    systemProperty 'intershop.gradle.versions', '2.11'
 }
 
 task copyAsciiDoc(type: Copy) {
@@ -109,6 +112,119 @@ task sourceJar(type: Jar) {
     from sourceSets.main.allSource
 }
 
+configurations {
+    documentation
+}
+
+artifacts {
+    archives jar
+    archives sourceJar
+    archives groovydocJar
+    documentation new File(buildDir, 'asciidoc/html5/README.html')
+    documentation new File(buildDir, 'asciidoc/docbook/README.xml')
+}
+
+publishing {
+    publications {
+        intershopMvn(MavenPublication) {
+            from components.java
+
+            artifact sourceJar {
+                classifier 'sources'
+            }
+
+            artifact groovydocJar {
+                classifier "javadoc"
+            }
+
+            artifact(new File(buildDir, 'asciidoc/html5/README.html')) {
+                classifier 'reference'
+            }
+
+            artifact(new File(buildDir, 'asciidoc/docbook/README.xml')) {
+                classifier = 'docbook'
+            }
+
+            pom.withXml {
+                def root = asNode();
+                root.appendNode('name', project.name)
+                root.appendNode('description', project.description)
+                root.appendNode('url', "https:/gitlab.intershop.de/IntershopGradlePlugins/${project.name}")
+
+                def organisation = root.appendNode( 'organization' )
+                organisation.appendNode("name", "Intershop Communications AG")
+                organisation.appendNode("url", "http://intershop.com")
+
+                def scm = root.appendNode( 'scm' )
+                scm.appendNode( 'url', "https://github.com/IntershopCommunicationsAG/${project.name}")
+                scm.appendNode( 'connection', "git@github.com:IntershopCommunicationsAG/${project.name}.git")
+                scm.appendNode( 'developerConnection', "git@github.com:IntershopCommunicationsAG/${project.name}.git")
+
+                def license = root.appendNode( 'licenses' ).appendNode( 'license' )
+                license.appendNode( 'name', 'Apache License, Version 2.0' )
+                license.appendNode( 'url', 'http://www.apache.org/licenses/LICENSE-2.0.txt')
+                license.appendNode( 'distribution', 'repo' )
+
+                def developer = root.appendNode('developers').appendNode( 'developer' )
+                developer.appendNode( 'id', 'm-raab' )
+                developer.appendNode( 'name', 'M. Raab' )
+                developer.appendNode( 'email', 'mraab@intershop.de' )
+
+                def pomFile = file("${project.buildDir}/generated-pom.xml")
+                writeTo(pomFile)
+                def pomAscFile = signing.sign(pomFile).signatureFiles[0]
+                artifact(pomAscFile) {
+                    classifier = null
+                    extension = 'pom.asc'
+                }
+            }
+
+            // create the signed artifacts
+            project.tasks.signArchives.signatureFiles.each {
+                artifact(it) {
+                    def matcher = it.file =~ /-(sources|javadoc)\.(jar)\.asc$/
+                    def ref_matcher = it.file =~ /\.html\.asc$/
+                    def doc_matcher = it.file =~ /\.xml\.asc$/
+                    if (matcher.find()) {
+                        classifier = matcher.group(1)
+                        extension = "jar.asc"
+                    } else {
+                        if(ref_matcher.find()) {
+                            classifier = 'reference'
+                            extension = 'html.asc'
+                        }
+                        else if(doc_matcher.find()) {
+                            classifier = 'docbook'
+                            extension = 'xml.asc'
+                        } else {
+                            classifier = null
+                            extension = 'jar.asc'
+                        }
+                    }
+
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+            def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots"
+            url = uri(version.toString().endsWith("SNAPSHOT") ? snapshotsRepoUrl : releasesRepoUrl)
+            credentials {
+                username = sonatypeUsername
+                password = sonatypePassword
+            }
+        }
+    }
+}
+
+signing {
+    sign configurations.archives, configurations.documentation
+}
+
+publish.dependsOn asciidoctor
+
 pluginBundle {
     website = "https://github.com/IntershopCommunicationsAG/${project.name}"
     vcsUrl = "https://github.com/IntershopCommunicationsAG/${project.name}"
@@ -145,8 +261,9 @@ pluginBundle {
 
 dependencies {
     compile 'com.intershop.gradle.repoconfig:repoconfig-gradle-plugin:3.2.0'
-    compile 'org.jfrog.buildinfo:build-info-extractor-gradle:4.4.13'
-    compile 'com.intershop.gradle.buildinfo:buildinfo-gradle-plugin:2.4.0'
+    // this is the latest version for Gradle 2!
+    compile 'org.jfrog.buildinfo:build-info-extractor-gradle:4.6.0'
+    compile 'com.intershop.gradle.buildinfo:buildinfo-gradle-plugin:2.4.2'
 
     testCompile('org.spockframework:spock-core:1.0-groovy-2.4'){
         exclude group: 'org.codehaus.groovy'
@@ -158,6 +275,6 @@ dependencies {
 }
 
 repositories {
-    jcenter()
     mavenCentral()
+    jcenter()
 }

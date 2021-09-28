@@ -66,8 +66,6 @@ class ArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
                 throw new GradleException('Please apply also "com.intershop.gradle.scmversion"')
             }
 
-            String jiraFieldName = project.hasProperty('jiraFieldName') ? project.property('jiraFieldName') : 'Fix Version/s'
-
             String repoBaseURL = getVariable(project, REPO_BASEURL_ENV, REPO_BASEURL_PRJ, '')
             String repoUserLogin = getVariable(project, REPO_USER_NAME_ENV, REPO_USER_NAME_PRJ, '')
             String repoUserPassword = getVariable(project, REPO_USER_PASSWORD_ENV, REPO_USER_PASSWORD_PRJ, '')
@@ -76,6 +74,7 @@ class ArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
             String repoSnapshotKey = getVariable(project, SNAPSHOT_KEY_ENV, SNAPSHOT_KEY_PRJ, '')
 
             if(repoBaseURL && repoUserLogin && repoUserPassword && repoReleaseKey && repoSnapshotKey) {
+                project.logger.info('All parameters for Artifactory are available ... Plugin will be configured.')
                 ArtifactoryPluginConvention artifactoryPluginConvention = project.rootProject.convention.getPlugin(ArtifactoryPluginConvention)
                 BuildInfoExtension infoExtension = project.extensions.findByType(BuildInfoExtension)
 
@@ -136,7 +135,7 @@ class ArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
             }
 
             // run change log creation with a separate call ...
-            Task releaseLog = project.rootProject.tasks.maybeCreate('releaseLog')
+            project.rootProject.tasks.maybeCreate('releaseLog')
 
             project.getRootProject().afterEvaluate {
                 //... only if the version does not end with SNAPSHOT

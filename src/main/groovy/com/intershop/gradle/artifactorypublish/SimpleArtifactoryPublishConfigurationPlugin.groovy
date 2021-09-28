@@ -45,7 +45,7 @@ class SimpleArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
     public final static String REPO_USER_NAME_PRJ = 'artifactoryUserName'
 
     public final static String REPO_USER_PASSWORD_ENV = 'ARTIFACTORYUSERPASSWD'
-    public final static String REPO_USER_PASSWORD_PRJ = 'artifactoryUserPASSWD'
+    public final static String REPO_USER_PASSWORD_PRJ = 'artifactoryUserPasswd'
 
     /** Repository Configuration - End **/
 
@@ -67,6 +67,7 @@ class SimpleArtifactoryPublishConfigurationPlugin implements Plugin<Project> {
             String repoSnapshotKey = getVariable(project, SNAPSHOT_KEY_ENV, SNAPSHOT_KEY_PRJ, '')
 
             if(repoBaseURL && repoUserLogin && repoUserPassword && repoReleaseKey && repoSnapshotKey) {
+                project.logger.info('All parameters for Artifactory are available ... Plugin will be configured.')
                 ArtifactoryPluginConvention artifactoryPluginConvention = project.rootProject.convention.getPlugin(ArtifactoryPluginConvention)
                 BuildInfoExtension infoExtension = project.extensions.findByType(BuildInfoExtension)
 
