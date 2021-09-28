@@ -278,3 +278,15 @@ repositories {
     mavenCentral()
     jcenter()
 }
+
+model {
+    tasks.generatePomFileForIntershopMvnPublication {
+        destination = file("$buildDir/generated-pom.xml")
+    }
+    tasks.publishIntershopMvnPublicationToMavenLocal {
+        dependsOn project.tasks.signArchives
+    }
+    tasks.publishIntershopMvnPublicationToMavenRepository {
+        dependsOn project.tasks.signArchives
+    }
+}
