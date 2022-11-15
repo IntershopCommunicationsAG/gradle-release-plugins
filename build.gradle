@@ -24,7 +24,7 @@ plugins {
     id 'com.intershop.gradle.scmversion' version '2.3.4'
 
     // plugin for publishing to Gradle Portal
-    id 'com.gradle.plugin-publish' version '0.15.0'
+    id 'com.gradle.plugin-publish' version '0.12.0'
 }
 
 scm {
