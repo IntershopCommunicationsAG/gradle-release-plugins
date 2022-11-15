@@ -3,6 +3,7 @@
 *.iml
 out
 gen
+bin/
 
 # Gradle Files
 .gradle
