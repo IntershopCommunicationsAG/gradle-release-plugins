@@ -3,6 +3,9 @@
 *.iml
 out
 gen
+bin/
+
+.vscode/
 
 # Gradle Files
 .gradle
