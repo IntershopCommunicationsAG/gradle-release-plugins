@@ -1,2 +1,8 @@
-rootProject.name = 'gradle-release-plugins'
+pluginRepositories {
+    maven {
+        url 'https://repo.maven.apache.org/maven2/'
+    }
+    gradlePluginPortal()
+}
 
+rootProject.name = 'gradle-release-plugins'
