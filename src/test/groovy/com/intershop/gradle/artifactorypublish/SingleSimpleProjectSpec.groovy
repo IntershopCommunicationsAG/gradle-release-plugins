@@ -41,8 +41,8 @@ class SingleSimpleProjectSpec extends AbstractIntegrationSpec {
             plugins {
                 id 'java'
                 id 'ivy-publish'
-                id 'com.intershop.gradle.scmversion' version '1.3.0'
-                id 'com.intershop.gradle.buildinfo' version '2.0.0'
+                id 'com.intershop.gradle.scmversion' version '2.7.4'
+                id 'com.intershop.gradle.buildinfo' version '2.4.2'
                 id 'com.intershop.gradle.simpleartifactorypublish-configuration'
             }
 
@@ -104,8 +104,8 @@ class SingleSimpleProjectSpec extends AbstractIntegrationSpec {
             plugins {
                 id 'java'
                 id 'maven-publish'
-                id 'com.intershop.gradle.scmversion' version '1.3.0'
-                id 'com.intershop.gradle.buildinfo' version '2.0.0'
+                id 'com.intershop.gradle.scmversion' version '2.7.4'
+                id 'com.intershop.gradle.buildinfo' version '2.4.2'
                 id 'com.intershop.gradle.simpleartifactorypublish-configuration'
             }
 
@@ -164,8 +164,8 @@ class SingleSimpleProjectSpec extends AbstractIntegrationSpec {
             plugins {
                 id 'java'
                 id 'ivy-publish'
-                id 'com.intershop.gradle.scmversion' version '1.3.0'
-                id 'com.intershop.gradle.buildinfo' version '2.0.0'
+                id 'com.intershop.gradle.scmversion' version '2.7.4'
+                id 'com.intershop.gradle.buildinfo' version '2.4.2'
                 id 'com.intershop.gradle.simpleartifactorypublish-configuration'
             }
 

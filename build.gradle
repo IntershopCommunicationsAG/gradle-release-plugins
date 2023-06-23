@@ -57,7 +57,10 @@ test {
 
 jar {
     from {
-        configurations.artifactory.collect { it.isDirectory() ? it : zipTree(it)}
+        configurations.artifactory.collect { it.isDirectory() ? it : zipTree(it).matching {
+                exclude "**/**/com.jfrog.artifactory.properties"
+            }
+        }
     }
 }
 
@@ -176,6 +179,35 @@ signing {
     sign configurations.archives, configurations.documentation
 }
 
+gradlePlugin {
+    plugins {
+        escrowPlugin {
+            id = 'com.intershop.gradle.escrow-plugin'
+            implementationClass = "com.intershop.gradle.escrow.EscrowPlugin"
+        }
+        javadocPlugin {
+            id = 'com.intershop.gradle.javadoc-configuration'
+            implementationClass = "com.intershop.gradle.javadoc.JavaDocConfigurationPlugin"
+        }
+        javasourcePlugin {
+            id = 'com.intershop.gradle.javasource-plugin'
+            implementationClass = 'com.intershop.gradle.javasource.JavaSourcePlugin'
+        }
+        simplepublishPlugin {
+            id = 'com.intershop.gradle.simplepublish-configuration'
+            implementationClass = 'com.intershop.gradle.simplepublish.PublishConfigurationPlugin'
+        }
+        artifactorypublishPlugin {
+            id = 'com.intershop.gradle.artifactorypublish-configuration'
+            implementationClass = 'com.intershop.gradle.artifactorypublish.ArtifactoryPublishConfigurationPlugin'
+        }
+        simpleartifactorypublishPlugin {
+            id = 'com.intershop.gradle.simpleartifactorypublish-configuration'
+            implementationClass = 'com.intershop.gradle.artifactorypublish.SimpleArtifactoryPublishConfigurationPlugin'
+        }
+    }
+}
+
 pluginBundle {
     website = "https://github.com/IntershopCommunicationsAG/${project.name}"
     vcsUrl = "https://github.com/IntershopCommunicationsAG/${project.name}"
@@ -184,28 +216,28 @@ pluginBundle {
 
     plugins {
         escrowPlugin {
-            id = 'com.intershop.gradle.escrow-plugin'
             displayName = 'Plugin for escrow package creation'
+            tags = ['intershop', 'publish', 'release', 'escrow']
         }
         javadocPlugin {
-            id = 'com.intershop.gradle.javadoc-configuration'
             displayName = 'Plugin with Intershop specific javadoc configuration'
+            tags = ['intershop', 'publish', 'release', 'java', 'doc']
         }
         javasourcePlugin {
-            id = 'com.intershop.gradle.javasource-plugin'
             displayName = 'Plugin with Intershop specific javasource package configuration'
+            tags = ['intershop', 'publish', 'release', 'java', 'source']
         }
         simplepublishPlugin {
-            id = 'com.intershop.gradle.simplepublish-configuration'
             displayName = 'Plugin with simple publishing configuration'
+            tags = ['intershop', 'publish', 'release', 'simple']
         }
         artifactorypublishPlugin {
-            id = 'com.intershop.gradle.artifactorypublish-configuration'
             displayName = 'Plugin with Intershop specific publishing configuration with Artifactory'
+            tags = ['intershop', 'publish', 'release', 'artifactory']
         }
         simpleartifactorypublishPlugin {
-            id = 'com.intershop.gradle.simpleartifactorypublish-configuration'
             displayName = 'Plugin with Intershop specific simple publishing configuration with Artifactory'
+            tags = ['intershop', 'publish', 'release', 'artifactory', 'simple']
         }
     }
 }
@@ -241,7 +273,7 @@ dependencies {
             "libs/build-info-extractor-2.9.2.jar",
             "libs/build-info-extractor-gradle-4.6.0.jar")
 
-    compileOnly files("libs/build-info-api-2.9.2.jar",
+    compile files("libs/build-info-api-2.9.2.jar",
             "libs/build-info-client-2.9.2.jar",
             "libs/build-info-extractor-2.9.2.jar",
             "libs/build-info-extractor-gradle-4.6.0.jar")
