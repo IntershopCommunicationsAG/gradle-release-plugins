@@ -258,7 +258,7 @@ bintray {
 dependencies {
     implementation("com.intershop.gradle.jiraconnector:jiraconnector-gradle-plugin:6.3.0")
 
-    implementation("org.jfrog.buildinfo:build-info-extractor-gradle:4.15.2") {
+    implementation("org.jfrog.buildinfo:build-info-extractor-gradle:4.33.1") {
         exclude(module = "groovy-all")
     }
     implementation("com.intershop.gradle.buildinfo:buildinfo-gradle-plugin:6.0.0")
